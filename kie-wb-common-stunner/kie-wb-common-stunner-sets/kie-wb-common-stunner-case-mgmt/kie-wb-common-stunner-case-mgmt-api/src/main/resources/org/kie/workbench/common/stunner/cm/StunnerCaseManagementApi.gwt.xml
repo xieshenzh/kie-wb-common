@@ -27,6 +27,7 @@
   <source path="qualifiers"/>
   <source path="resource"/>
   <source path="util"/>
+  <source path="function"/>
   <source path="" includes="CaseManagementDefinitionSet.java"/>
 
 </module>
