@@ -29,19 +29,34 @@ public final class CommandNotification
 
     private final Command<?, CanvasViolation> source;
 
+    private final CommandResult<CanvasViolation> result;
+
     CommandNotification(final Type type,
                         final NotificationContext context,
                         final Command<?, CanvasViolation> source,
                         final String message) {
+        this(type, context, source, message, null);
+    }
+
+    CommandNotification(final Type type,
+                        final NotificationContext context,
+                        final Command<?, CanvasViolation> source,
+                        final String message,
+                        final CommandResult<CanvasViolation> result) {
         super(context,
               type,
               message);
         this.source = source;
+        this.result = result;
     }
 
     @Override
     public Optional<Command<?, CanvasViolation>> getSource() {
         return Optional.of(source);
+    }
+
+    public Optional<CommandResult<CanvasViolation>> getResult() {
+        return Optional.ofNullable(result);
     }
 
     public static class Builder {
@@ -59,7 +74,8 @@ public final class CommandNotification
             return new CommandNotification(type,
                                            context,
                                            command,
-                                           message);
+                                           message,
+                                           result);
         }
 
         public static CommandNotification build(final NotificationContext context,
