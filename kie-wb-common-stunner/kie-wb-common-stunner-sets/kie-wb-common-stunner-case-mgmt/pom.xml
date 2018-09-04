@@ -32,6 +32,7 @@
 
   <modules>
     <module>kie-wb-common-stunner-case-mgmt-api</module>
+    <module>kie-wb-common-stunner-case-mgmt-gen</module>
     <module>kie-wb-common-stunner-case-mgmt-backend</module>
     <module>kie-wb-common-stunner-case-mgmt-client</module>
     <module>kie-wb-common-stunner-case-mgmt-project-api</module>

@@ -109,6 +109,7 @@ public class CaseManagementContainmentControl implements WiresContainmentControl
 
     @Override
     public boolean onMoveComplete() {
+        state.getGhost().ifPresent(WiresShape::removeFromParent);
         return containmentControl.onMoveComplete();
     }
 

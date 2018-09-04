@@ -16,6 +16,7 @@
 
 package org.kie.workbench.common.stunner.core.rule.violations;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import org.jboss.errai.common.client.api.annotations.MapsTo;
@@ -41,5 +42,9 @@ public class ContainmentRuleViolation extends AbstractRuleViolation {
     @Override
     public String getMessage() {
         return "The '" + parent + "' does not accepts containment for the candidate with labels ['" + candidate + "'].";
+    }
+
+    public boolean isParentMatch(String parent) {
+        return Objects.equals(this.parent, parent);
     }
 }
