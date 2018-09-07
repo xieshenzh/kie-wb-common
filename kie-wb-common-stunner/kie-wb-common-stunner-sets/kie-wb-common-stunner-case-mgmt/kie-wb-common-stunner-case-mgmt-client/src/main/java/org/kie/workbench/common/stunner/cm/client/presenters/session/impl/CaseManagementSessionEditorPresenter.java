@@ -20,7 +20,6 @@ import java.util.stream.StreamSupport;
 
 import javax.enterprise.context.Dependent;
 import javax.enterprise.event.Event;
-import javax.enterprise.inject.Alternative;
 import javax.enterprise.inject.Any;
 import javax.inject.Inject;
 
@@ -33,6 +32,7 @@ import org.kie.workbench.common.stunner.client.widgets.palette.DefaultPaletteFac
 import org.kie.workbench.common.stunner.client.widgets.presenters.session.impl.SessionEditorImpl;
 import org.kie.workbench.common.stunner.client.widgets.presenters.session.impl.SessionEditorPresenter;
 import org.kie.workbench.common.stunner.client.widgets.toolbar.impl.EditorToolbar;
+import org.kie.workbench.common.stunner.cm.qualifiers.CaseManagementEditor;
 import org.kie.workbench.common.stunner.core.client.api.SessionManager;
 import org.kie.workbench.common.stunner.core.client.canvas.AbstractCanvasHandler;
 import org.kie.workbench.common.stunner.core.client.command.CanvasViolation;
@@ -42,7 +42,7 @@ import org.kie.workbench.common.stunner.core.command.CommandResult;
 import org.kie.workbench.common.stunner.core.util.DefinitionUtils;
 
 @Dependent
-@Alternative
+@CaseManagementEditor
 public class CaseManagementSessionEditorPresenter<S extends EditorSession> extends SessionEditorPresenter<S> {
 
     @Inject
