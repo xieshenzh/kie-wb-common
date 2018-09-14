@@ -34,6 +34,7 @@ import org.kie.workbench.common.stunner.client.widgets.presenters.session.impl.S
 import org.kie.workbench.common.stunner.client.widgets.toolbar.impl.ManagedEditorToolbar;
 import org.kie.workbench.common.stunner.client.widgets.views.session.ScreenErrorView;
 import org.kie.workbench.common.stunner.client.widgets.views.session.ScreenPanelView;
+import org.kie.workbench.common.stunner.cm.qualifiers.CaseManagementEditor;
 import org.kie.workbench.common.stunner.core.api.DefinitionManager;
 import org.kie.workbench.common.stunner.core.client.annotation.DiagramEditor;
 import org.kie.workbench.common.stunner.core.client.canvas.CanvasHandler;
@@ -97,7 +98,7 @@ public class SessionDiagramEditorScreen {
     public SessionDiagramEditorScreen(final DefinitionManager definitionManager,
                                       final ClientFactoryService clientFactoryServices,
                                       final ShowcaseDiagramService diagramService,
-                                      final SessionEditorPresenter<EditorSession> presenter,
+                                      @CaseManagementEditor final SessionEditorPresenter<EditorSession> presenter,
                                       final Event<ChangeTitleWidgetEvent> changeTitleNotificationEvent,
                                       final MenuDevCommandsBuilder menuDevCommandsBuilder,
                                       final ScreenPanelView screenPanelView,

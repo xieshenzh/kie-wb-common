@@ -340,7 +340,7 @@ public abstract class AbstractSessionPresenter<D extends Diagram, H extends Abst
         }
     }
 
-    private void showCommandError(final CommandNotification notification) {
+    protected void showCommandError(final CommandNotification notification) {
         if (isThisContext(notification)) {
             showError(notification.getMessage());
         }
