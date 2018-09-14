@@ -30,6 +30,7 @@
   <artifactId>kie-wb-common-stunner-case-mgmt-gen</artifactId>
   <name>Kie Workbench - Common - Stunner - Case Management Definition Set - Generator</name>
   <description>Kie Workbench - Common - Stunner - Case Management Definition Set - Generator</description>
+  <version>7.12.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <properties>
