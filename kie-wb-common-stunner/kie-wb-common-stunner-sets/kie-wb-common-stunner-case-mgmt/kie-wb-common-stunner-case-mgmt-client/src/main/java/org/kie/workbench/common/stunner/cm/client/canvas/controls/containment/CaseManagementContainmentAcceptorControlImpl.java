@@ -232,9 +232,18 @@ public class CaseManagementContainmentAcceptorControlImpl extends AbstractAccept
                     }
                 }
 
+                if (state.getOriginalIndex().isPresent()) {
+                    int oldIndex = state.getOriginalIndex().get();
+                    targetIndex = targetIndex > oldIndex ? targetIndex - 1 : targetIndex;
+                }
+
                 return targetIndex;
             } else {    // Add to a stage vertically
-                return parent.getOutEdges().size();
+                if (state.getOriginalParent().isPresent() && state.getOriginalParent().get().equals(container)) {  // same stage
+                    return parent.getOutEdges().size() - 1;
+                } else {
+                    return parent.getOutEdges().size();
+                }
             }
         }
     }
