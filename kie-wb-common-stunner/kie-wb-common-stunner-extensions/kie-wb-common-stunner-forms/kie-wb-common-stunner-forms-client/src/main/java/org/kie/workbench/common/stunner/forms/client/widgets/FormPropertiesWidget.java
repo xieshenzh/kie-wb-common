@@ -140,26 +140,28 @@ public class FormPropertiesWidget implements IsElement,
     private void show(final String graphUuid,
                       final Element<? extends Definition<?>> element,
                       final Command callback) {
-        final String uuid = element.getUUID();
-        final Diagram<?, ?> diagram = formSessionHandler.getDiagram();
-        final Object definition = element.getContent().getDefinition();
-        final RenderMode renderMode = formSessionHandler.getSession() instanceof EditorSession ? RenderMode.EDIT_MODE : RenderMode.READ_ONLY_MODE;
+        if (element != null) {
+            final String uuid = element.getUUID();
+            final Diagram<?, ?> diagram = formSessionHandler.getDiagram();
+            final Object definition = element.getContent().getDefinition();
+            final RenderMode renderMode = formSessionHandler.getSession() instanceof EditorSession ? RenderMode.EDIT_MODE : RenderMode.READ_ONLY_MODE;
 
-        formsContainer.render(graphUuid, element, diagram.getMetadata().getPath(), (fieldName, newValue) -> {
-            try {
-                formSessionHandler.executeUpdateProperty(element, fieldName, newValue);
-            } catch (final Exception ex) {
-                log(Level.SEVERE,
-                    "Something wrong happened refreshing the canvas for " +
-                            "field '" + fieldName + "': " + ex.getCause());
-            } finally {
-                if (null != callback) {
-                    callback.execute();
+            formsContainer.render(graphUuid, element, diagram.getMetadata().getPath(), (fieldName, newValue) -> {
+                try {
+                    formSessionHandler.executeUpdateProperty(element, fieldName, newValue);
+                } catch (final Exception ex) {
+                    log(Level.SEVERE,
+                        "Something wrong happened refreshing the canvas for " +
+                                "field '" + fieldName + "': " + ex.getCause());
+                } finally {
+                    if (null != callback) {
+                        callback.execute();
+                    }
                 }
-            }
-        }, renderMode);
-        final String name = definitionUtils.getName(definition);
-        propertiesOpenedEvent.fire(new FormPropertiesOpened(formSessionHandler.getSession(), uuid, name));
+            }, renderMode);
+            final String name = definitionUtils.getName(definition);
+            propertiesOpenedEvent.fire(new FormPropertiesOpened(formSessionHandler.getSession(), uuid, name));
+        }
     }
 
     private static void log(final Level level, final String message) {
