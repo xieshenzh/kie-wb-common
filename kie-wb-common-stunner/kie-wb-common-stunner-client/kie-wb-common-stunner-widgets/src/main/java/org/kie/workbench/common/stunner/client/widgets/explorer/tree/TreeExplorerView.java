@@ -101,6 +101,22 @@ public class TreeExplorerView extends Composite implements TreeExplorer.View {
                                      final IsWidget icon,
                                      final boolean isContainer,
                                      final boolean state) {
+        return addItem(uuid,
+                parentsUuid,
+                name,
+                icon,
+                isContainer,
+                state,
+                -1);
+    }
+
+    public TreeExplorer.View addItem(final String uuid,
+                                     final String parentsUuid,
+                                     final String name,
+                                     final IsWidget icon,
+                                     final boolean isContainer,
+                                     final boolean state,
+                                     final int index) {
         checkNotExist(uuid);
         final TreeItem.Type itemType = isContainer ? TreeItem.Type.CONTAINER : TreeItem.Type.ITEM;
         final TreeItem item = buildItem(uuid,
@@ -108,10 +124,18 @@ public class TreeExplorerView extends Composite implements TreeExplorer.View {
                                         icon,
                                         itemType);
         final TreeItem parent = tree.getItemByUuid(parentsUuid);
-        parent.addItem(itemType,
-                       uuid,
-                       name,
-                       icon);
+        if (index < 0) {
+            parent.addItem(itemType,
+                           uuid,
+                           name,
+                           icon);
+        } else {
+            parent.insertItem(itemType,
+                              uuid,
+                              name,
+                              icon,
+                              index);
+        }
         parent.setState(getState(state));
         item.setState(getState(state));
         return this;
@@ -166,6 +190,11 @@ public class TreeExplorerView extends Composite implements TreeExplorer.View {
     public TreeExplorer.View removeItem(String uuid) {
         tree.getItemByUuid(uuid).remove();
         return this;
+    }
+
+    @Override
+    public int getItemIndex(String uuid) {
+        return tree.getItemByUuid(uuid).getItemIndex();
     }
 
     private TreeItem buildItem(final String uuid,

@@ -185,11 +185,13 @@ public class TreeExplorer implements IsWidget {
                                    null != parent ? parent.getUUID() : null,
                                    getItemName(element))) {
 
+                final int index = view.getItemIndex(element.getUUID());
                 view.removeItem(element.getUUID());
                 addItem(parent,
                         (Node) element,
                         true,
-                        true);
+                        true,
+                        index);
 
                 final boolean hasChildren = GraphUtils.hasChildren((Node<?, ? extends Edge>) element);
                 if (hasChildren) {
@@ -230,11 +232,23 @@ public class TreeExplorer implements IsWidget {
         }
     }
 
-    @SuppressWarnings("unchecked")
     private void addItem(final Element parent,
                          final Node element,
                          final boolean expand,
                          final boolean checkParent) {
+        addItem(parent,
+                element,
+                expand,
+                checkParent,
+                -1);
+    }
+
+    @SuppressWarnings("unchecked")
+    private void addItem(final Element parent,
+                         final Node element,
+                         final boolean expand,
+                         final boolean checkParent,
+                         final int index) {
         final boolean isContainer = isContainer().test(element);
         final Glyph glyph = getGlyph(getShapeSetId(),
                                      element);
@@ -249,11 +263,13 @@ public class TreeExplorer implements IsWidget {
             final boolean isParentContainer = isContainer().test((Node) parent);
             final boolean wasParentContainer = view.isContainer(parent.getUUID());
             if (isParentContainer != wasParentContainer) {
+                final int parentIndex = view.getItemIndex(parent.getUUID());
                 view.removeItem(parent.getUUID());
                 addItem(GraphUtils.getParent((Node<?, ? extends Edge>) parent),
                         (Node) parent,
                         expand,
-                        false);
+                        false,
+                        parentIndex);
             }
         }
 
@@ -266,7 +282,8 @@ public class TreeExplorer implements IsWidget {
                          name,
                          widget,
                          isContainer,
-                         expand);
+                         expand,
+                         index);
         } else {
             view.addItem(element.getUUID(),
                          name,
@@ -439,9 +456,19 @@ public class TreeExplorer implements IsWidget {
                      final boolean isContainer,
                      final boolean state);
 
+        View addItem(final String uuid,
+                     final String parentUuid,
+                     final String name,
+                     final IsWidget icon,
+                     final boolean isContainer,
+                     final boolean state,
+                     final int index);
+
         View setSelectedItem(final String uuid);
 
         View removeItem(String uuid);
+
+        int getItemIndex(final String uuid);
 
         View clear();
 
