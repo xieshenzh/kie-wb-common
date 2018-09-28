@@ -16,9 +16,16 @@
 
 package org.kie.workbench.common.stunner.cm.client.wires;
 
+import com.ait.lienzo.client.core.shape.Rectangle;
+import org.kie.workbench.common.stunner.cm.client.shape.view.CaseManagementShapeView;
+import org.kie.workbench.common.stunner.svg.client.shape.view.SVGPrimitiveShape;
+
 /**
  * Mock implementation of CaseManagementShapeView for Unit Tests
  */
-public class MockCaseManagementShapeView {
+public class MockCaseManagementShapeView extends CaseManagementShapeView {
 
+    public MockCaseManagementShapeView(String name) {
+        super(name, new SVGPrimitiveShape(new Rectangle(0d, 0d)), 0d, 0d, false);
+    }
 }
