@@ -19,7 +19,7 @@ package org.kie.workbench.common.stunner.cm.client.palette;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import com.google.gwt.core.client.GWT;
+import com.ait.lienzo.test.LienzoMockitoTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,7 +32,6 @@ import org.kie.workbench.common.stunner.bpmn.definition.NoneTask;
 import org.kie.workbench.common.stunner.bpmn.definition.ScriptTask;
 import org.kie.workbench.common.stunner.bpmn.definition.StartNoneEvent;
 import org.kie.workbench.common.stunner.bpmn.definition.UserTask;
-import org.kie.workbench.common.stunner.cm.client.resources.CaseManagementImageResources;
 import org.kie.workbench.common.stunner.cm.definition.ReusableSubprocess;
 import org.kie.workbench.common.stunner.core.api.DefinitionManager;
 import org.kie.workbench.common.stunner.core.client.components.palette.ExpandedPaletteDefinitionBuilder;
@@ -41,9 +40,6 @@ import org.kie.workbench.common.stunner.core.i18n.StunnerTranslationService;
 import org.kie.workbench.common.stunner.core.registry.impl.DefinitionsCacheRegistry;
 import org.kie.workbench.common.stunner.core.util.DefinitionUtils;
 import org.mockito.Mock;
-import org.powermock.api.mockito.PowerMockito;
-import org.powermock.core.classloader.annotations.PrepareForTest;
-import org.powermock.modules.junit4.PowerMockRunner;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -53,10 +49,8 @@ import static org.kie.workbench.common.stunner.cm.client.palette.CaseManagementP
 import static org.kie.workbench.common.stunner.cm.client.palette.CaseManagementPaletteDefinitionBuilder.SUBCASES;
 import static org.kie.workbench.common.stunner.cm.client.palette.CaseManagementPaletteDefinitionBuilder.SUBPROCESSES;
 import static org.kie.workbench.common.stunner.cm.client.palette.CaseManagementPaletteDefinitionBuilder.TASKS;
-import static org.mockito.Matchers.eq;
 
-@RunWith(PowerMockRunner.class)
-@PrepareForTest(GWT.class)
+@RunWith(LienzoMockitoTestRunner.class)
 public class CaseManagementPaletteDefinitionBuilderTest {
 
     @Mock
@@ -77,9 +71,6 @@ public class CaseManagementPaletteDefinitionBuilderTest {
     @Before
     @SuppressWarnings("unchecked")
     public void setup() throws Exception {
-        PowerMockito.spy(GWT.class);
-        PowerMockito.doReturn(null).when(GWT.class, "create", eq(CaseManagementImageResources.class));
-
         paletteDefinitionBuilder = new ExpandedPaletteDefinitionBuilder(definitionUtils,
                                                                         definitionsRegistry,
                                                                         translationService);
