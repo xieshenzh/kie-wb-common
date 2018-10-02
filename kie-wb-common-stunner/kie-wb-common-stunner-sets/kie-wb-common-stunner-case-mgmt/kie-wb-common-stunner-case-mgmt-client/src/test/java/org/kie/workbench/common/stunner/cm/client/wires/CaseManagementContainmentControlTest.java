@@ -90,13 +90,16 @@ public class CaseManagementContainmentControlTest {
     private WiresParentPickerControl.Index index;
 
     private CaseManagementContainmentControl control;
-    private MockCaseManagementShapeView shape;
+
+    @Mock
+    private CaseManagementShapeView shape;
+
     private Layer layer;
 
     @Before
     public void setup() {
         layer = spy(new Layer());
-        shape = spy(new MockCaseManagementShapeView("mock"));
+
         final Group shapeGroup = mock(Group.class);
         when(shapeGroup.getLayer()).thenReturn(layer);
         when(shape.getGroup()).thenReturn(shapeGroup);

@@ -22,6 +22,7 @@ import java.util.UUID;
 
 import javax.enterprise.event.Event;
 
+import com.ait.lienzo.client.core.shape.Rectangle;
 import com.ait.lienzo.client.core.shape.wires.WiresManager;
 import com.ait.lienzo.test.LienzoMockitoTestRunner;
 import org.junit.Before;
@@ -30,7 +31,6 @@ import org.junit.runner.RunWith;
 import org.kie.workbench.common.stunner.client.widgets.canvas.view.LienzoPanel;
 import org.kie.workbench.common.stunner.cm.client.shape.CaseManagementShape;
 import org.kie.workbench.common.stunner.cm.client.shape.view.CaseManagementShapeView;
-import org.kie.workbench.common.stunner.cm.client.wires.MockCaseManagementShapeView;
 import org.kie.workbench.common.stunner.core.client.canvas.Canvas;
 import org.kie.workbench.common.stunner.core.client.canvas.Layer;
 import org.kie.workbench.common.stunner.core.client.canvas.event.CanvasClearEvent;
@@ -40,6 +40,7 @@ import org.kie.workbench.common.stunner.core.client.canvas.event.registration.Ca
 import org.kie.workbench.common.stunner.core.client.canvas.event.registration.CanvasShapeRemovedEvent;
 import org.kie.workbench.common.stunner.core.client.shape.Shape;
 import org.kie.workbench.common.stunner.core.client.shape.view.ShapeView;
+import org.kie.workbench.common.stunner.svg.client.shape.view.SVGPrimitiveShape;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.uberfire.mocks.EventSourceMock;
@@ -182,7 +183,11 @@ public class CaseManagementCanvasPresenterTest {
     }
 
     private CaseManagementShape createShape(String name) {
-        CaseManagementShapeView shapeView = new MockCaseManagementShapeView(name);
+        CaseManagementShapeView shapeView = new CaseManagementShapeView(name,
+                                                                        new SVGPrimitiveShape(new Rectangle(0d, 0d)),
+                                                                        0d,
+                                                                        0d,
+                                                                        false);
         shapeView.setUUID(UUID.randomUUID().toString());
         CaseManagementShape shape = new CaseManagementShape(shapeView);
         shape.setUUID(shapeView.getUUID());
