@@ -304,7 +304,7 @@ public class CaseManagementContainmentAcceptorControlImplTest {
 
         int result = ((CaseManagementContainmentAcceptorControlImpl.CanvasManagementContainmentAcceptor) control.containmentAcceptor).getAddIndex(childShape, parentShape);
 
-        assertTrue(parent.getOutEdges().size() - 1 == result);
+        assertTrue(0 == result);
     }
 
     @Test
@@ -322,7 +322,7 @@ public class CaseManagementContainmentAcceptorControlImplTest {
 
         int result = ((CaseManagementContainmentAcceptorControlImpl.CanvasManagementContainmentAcceptor) control.containmentAcceptor).getAddIndex(childShape, parentShape);
 
-        assertTrue(parent.getOutEdges().size() == result);
+        assertTrue(1 == result);
     }
 
     @Test
@@ -367,7 +367,7 @@ public class CaseManagementContainmentAcceptorControlImplTest {
 
         int result = ((CaseManagementContainmentAcceptorControlImpl.CanvasManagementContainmentAcceptor) control.containmentAcceptor).getAddIndex(childShape, parentShape);
 
-        assertTrue(parentShape.getChildShapes().size() == result);
+        assertTrue(1 == result);
     }
 
     @Test
@@ -391,6 +391,6 @@ public class CaseManagementContainmentAcceptorControlImplTest {
 
         int result = ((CaseManagementContainmentAcceptorControlImpl.CanvasManagementContainmentAcceptor) control.containmentAcceptor).getAddIndex(childShape, parentShape);
 
-        assertTrue(parentShape.getChildShapes().size() - 1 == result);
+        assertTrue(1 == result);
     }
 }
