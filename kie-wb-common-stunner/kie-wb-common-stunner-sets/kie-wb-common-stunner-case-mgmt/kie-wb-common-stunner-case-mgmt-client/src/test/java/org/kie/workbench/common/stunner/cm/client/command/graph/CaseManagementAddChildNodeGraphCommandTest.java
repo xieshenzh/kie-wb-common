@@ -55,7 +55,8 @@ public class CaseManagementAddChildNodeGraphCommandTest extends AbstractGraphCom
 
     private CaseManagementAddChildNodeGraphCommand addChildNode() {
         final CaseManagementAddChildNodeGraphCommand command = new CaseManagementAddChildNodeGraphCommand(parent,
-                                                                                                          candidate);
+                                                                                                          candidate,
+                                                                                                          0);
         command.execute(context);
         return command;
     }
