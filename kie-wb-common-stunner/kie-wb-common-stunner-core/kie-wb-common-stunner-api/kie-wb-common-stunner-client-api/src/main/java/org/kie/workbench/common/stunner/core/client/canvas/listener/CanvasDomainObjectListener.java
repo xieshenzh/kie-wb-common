@@ -15,9 +15,10 @@
  */
 package org.kie.workbench.common.stunner.core.client.canvas.listener;
 
+import org.kie.workbench.common.stunner.core.client.canvas.CanvasHandler;
 import org.kie.workbench.common.stunner.core.domainobject.DomainObject;
 
-public interface CanvasDomainObjectListener {
+public interface CanvasDomainObjectListener extends CanvasListener<CanvasHandler, DomainObject> {
 
     /**
      * A DomainObject has been updated on the canvas.
