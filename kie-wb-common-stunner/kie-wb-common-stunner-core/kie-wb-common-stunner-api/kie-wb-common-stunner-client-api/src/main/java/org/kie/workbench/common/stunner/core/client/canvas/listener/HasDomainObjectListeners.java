@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.dmn.client.editors.types.listview.common;
+package org.kie.workbench.common.stunner.core.client.canvas.listener;
 
-import elemental2.dom.Element;
-import jsinterop.annotations.JsType;
+public interface HasDomainObjectListeners<L extends CanvasDomainObjectListener> {
 
-@JsType(isNative = true)
-public abstract class JQueryEvent {
+    HasDomainObjectListeners<L> addDomainObjectListener(final L instance);
 
-    public Element target;
+    HasDomainObjectListeners<L> removeDomainObjectListener(final L instance);
+
+    HasDomainObjectListeners<L> clearDomainObjectListeners();
 }
