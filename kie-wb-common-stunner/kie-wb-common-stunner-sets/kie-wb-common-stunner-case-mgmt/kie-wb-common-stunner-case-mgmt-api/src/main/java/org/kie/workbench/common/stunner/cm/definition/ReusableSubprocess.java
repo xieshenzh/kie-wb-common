@@ -25,7 +25,7 @@ import org.kie.workbench.common.forms.adf.definitions.annotations.FieldParam;
 import org.kie.workbench.common.forms.adf.definitions.annotations.FormDefinition;
 import org.kie.workbench.common.forms.adf.definitions.annotations.FormField;
 import org.kie.workbench.common.forms.adf.definitions.settings.FieldPolicy;
-import org.kie.workbench.common.stunner.bpmn.definition.BaseSubprocess;
+import org.kie.workbench.common.stunner.bpmn.definition.BaseReusableSubprocess;
 import org.kie.workbench.common.stunner.bpmn.definition.property.background.BackgroundSet;
 import org.kie.workbench.common.stunner.bpmn.definition.property.dataio.DataIOModel;
 import org.kie.workbench.common.stunner.bpmn.definition.property.dataio.DataIOSet;
@@ -54,7 +54,7 @@ import static org.kie.workbench.common.forms.adf.engine.shared.formGeneration.pr
 // Unfortunately extending the foregoing and providing a new set of labels leads to errai-data-binding to barf
 // presumably because there are two fields called "labels" (although I've also tried with a different name field
 // and it leads to the same errors).
-public class ReusableSubprocess extends BaseSubprocess implements DataIOModel {
+public class ReusableSubprocess extends BaseReusableSubprocess implements DataIOModel {
 
     @PropertySet
     @FormField(
@@ -123,18 +123,22 @@ public class ReusableSubprocess extends BaseSubprocess implements DataIOModel {
         return false;
     }
 
+    @Override
     public ReusableSubprocessTaskExecutionSet getExecutionSet() {
         return executionSet;
     }
 
+    @Override
     public DataIOSet getDataIOSet() {
         return dataIOSet;
     }
 
+    @Override
     public void setExecutionSet(final ReusableSubprocessTaskExecutionSet executionSet) {
         this.executionSet = executionSet;
     }
 
+    @Override
     public void setDataIOSet(final DataIOSet dataIOSet) {
         this.dataIOSet = dataIOSet;
     }
