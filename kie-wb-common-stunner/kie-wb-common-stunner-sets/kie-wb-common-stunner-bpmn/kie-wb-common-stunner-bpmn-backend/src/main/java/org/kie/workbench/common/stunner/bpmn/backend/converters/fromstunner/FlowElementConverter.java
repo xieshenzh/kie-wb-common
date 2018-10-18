@@ -23,21 +23,26 @@ import org.kie.workbench.common.stunner.bpmn.definition.BPMNViewDefinition;
 import org.kie.workbench.common.stunner.bpmn.definition.BaseCatchingIntermediateEvent;
 import org.kie.workbench.common.stunner.bpmn.definition.BaseEndEvent;
 import org.kie.workbench.common.stunner.bpmn.definition.BaseGateway;
+import org.kie.workbench.common.stunner.bpmn.definition.BaseReusableSubprocess;
 import org.kie.workbench.common.stunner.bpmn.definition.BaseStartEvent;
 import org.kie.workbench.common.stunner.bpmn.definition.BaseSubprocess;
 import org.kie.workbench.common.stunner.bpmn.definition.BaseTask;
 import org.kie.workbench.common.stunner.bpmn.definition.BaseThrowingIntermediateEvent;
 import org.kie.workbench.common.stunner.bpmn.definition.Lane;
-import org.kie.workbench.common.stunner.bpmn.definition.ReusableSubprocess;
 import org.kie.workbench.common.stunner.core.graph.Node;
 import org.kie.workbench.common.stunner.core.graph.content.view.View;
 
-public class FlowElementConverter {
+public class FlowElementConverter<R extends BaseReusableSubprocess> {
 
-    private final ConverterFactory converterFactory;
+    private final Class<R> reusableSubprocessClass;
 
-    public FlowElementConverter(ConverterFactory converterFactory) {
+    private final BaseConverterFactory<?, ?, R> converterFactory;
+
+    public FlowElementConverter(BaseConverterFactory<?, ?, R> converterFactory,
+                                Class<R> reusableSubprocessClass) {
         this.converterFactory = converterFactory;
+
+        this.reusableSubprocessClass = reusableSubprocessClass;
     }
 
     public Result<PropertyWriter> toFlowElement(Node<View<? extends BPMNViewDefinition>, ?> node) {
@@ -48,7 +53,7 @@ public class FlowElementConverter {
                 .when(BaseEndEvent.class, converterFactory.endEventConverter()::toFlowElement)
                 .when(BaseTask.class, converterFactory.taskConverter()::toFlowElement)
                 .when(BaseGateway.class, converterFactory.gatewayConverter()::toFlowElement)
-                .when(ReusableSubprocess.class, converterFactory.reusableSubprocessConverter()::toFlowElement)
+                .when(reusableSubprocessClass, converterFactory.reusableSubprocessConverter()::toFlowElement)
                 .ignore(BaseSubprocess.class)
                 .ignore(Lane.class)
                 .apply(node);

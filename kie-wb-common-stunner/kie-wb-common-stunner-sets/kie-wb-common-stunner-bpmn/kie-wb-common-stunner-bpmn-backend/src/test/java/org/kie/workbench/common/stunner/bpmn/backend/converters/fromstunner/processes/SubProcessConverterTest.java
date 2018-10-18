@@ -41,7 +41,7 @@ public class SubProcessConverterTest {
         ConverterFactory f = new ConverterFactory(new DefinitionsBuildingContext(
                 new GraphImpl("x", new GraphNodeStoreImpl())),
                                                   new PropertyWriterFactory());
-        SubProcessConverter c = f.subProcessConverter();
+        SubProcessConverter c = (SubProcessConverter) f.subProcessConverter();
 
         NodeImpl<View<? extends BPMNViewDefinition>> n = new NodeImpl<>("n");
         EventSubprocess subProcessNode = new EventSubprocess();

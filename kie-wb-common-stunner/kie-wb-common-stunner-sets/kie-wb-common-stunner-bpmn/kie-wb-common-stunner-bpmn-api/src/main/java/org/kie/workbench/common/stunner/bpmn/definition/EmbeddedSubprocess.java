@@ -57,7 +57,7 @@ import static org.kie.workbench.common.forms.adf.engine.shared.formGeneration.pr
         policy = FieldPolicy.ONLY_MARKED,
         defaultFieldSettings = {@FieldParam(name = FIELD_CONTAINER_PARAM, value = COLLAPSIBLE_CONTAINER)}
 )
-public class EmbeddedSubprocess extends BaseSubprocess implements DataIOModel {
+public class EmbeddedSubprocess extends BaseEmbeddedSubprocess implements DataIOModel {
 
     @PropertySet
     @FormField(afterElement = "general")
@@ -116,18 +116,22 @@ public class EmbeddedSubprocess extends BaseSubprocess implements DataIOModel {
         return false;
     }
 
+    @Override
     public ProcessData getProcessData() {
         return processData;
     }
 
+    @Override
     public void setProcessData(final ProcessData processData) {
         this.processData = processData;
     }
 
+    @Override
     public EmbeddedSubprocessExecutionSet getExecutionSet() {
         return executionSet;
     }
 
+    @Override
     public void setExecutionSet(EmbeddedSubprocessExecutionSet executionSet) {
         this.executionSet = executionSet;
     }
