@@ -13,26 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.kie.workbench.common.stunner.cm.backend.converters.fromstunner.processes;
+package org.kie.workbench.common.stunner.cm.backend.converters.tostunner.processes;
 
-import org.kie.workbench.common.stunner.bpmn.backend.converters.fromstunner.DefinitionsBuildingContext;
-import org.kie.workbench.common.stunner.bpmn.backend.converters.fromstunner.processes.BaseSubProcessConverter;
-import org.kie.workbench.common.stunner.bpmn.backend.converters.fromstunner.properties.PropertyWriterFactory;
-import org.kie.workbench.common.stunner.cm.backend.converters.fromstunner.CaseManagementConverterFactory;
+import org.kie.workbench.common.stunner.bpmn.backend.converters.TypedFactoryManager;
+import org.kie.workbench.common.stunner.bpmn.backend.converters.tostunner.DefinitionResolver;
+import org.kie.workbench.common.stunner.bpmn.backend.converters.tostunner.processes.BaseSubProcessConverter;
+import org.kie.workbench.common.stunner.bpmn.backend.converters.tostunner.properties.PropertyReaderFactory;
+import org.kie.workbench.common.stunner.cm.backend.converters.tostunner.CaseManagementConverterFactory;
 import org.kie.workbench.common.stunner.cm.definition.AdHocSubprocess;
 import org.kie.workbench.common.stunner.cm.definition.EmbeddedSubprocess;
-import org.kie.workbench.common.stunner.cm.definition.ReusableSubprocess;
 
-public class CaseManagementSubProcessConverter extends BaseSubProcessConverter<AdHocSubprocess, EmbeddedSubprocess, ReusableSubprocess> {
+public class CaseManagementSubProcessConverter extends BaseSubProcessConverter<AdHocSubprocess, EmbeddedSubprocess> {
 
     private final CaseManagementConverterFactory converterFactory;
 
-    public CaseManagementSubProcessConverter(DefinitionsBuildingContext context,
-                               PropertyWriterFactory propertyWriterFactory,
-                               CaseManagementConverterFactory converterFactory) {
-        super(context,
-              propertyWriterFactory,
-              converterFactory);
+    public CaseManagementSubProcessConverter(TypedFactoryManager typedFactoryManager,
+                                             PropertyReaderFactory propertyReaderFactory,
+                                             DefinitionResolver definitionResolver,
+                                             CaseManagementConverterFactory converterFactory) {
+        super(typedFactoryManager, propertyReaderFactory, definitionResolver, converterFactory);
 
         this.converterFactory = converterFactory;
     }

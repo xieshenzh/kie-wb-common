@@ -15,6 +15,53 @@
  */
 package org.kie.workbench.common.stunner.cm.backend.converters.tostunner;
 
-public class CaseManagementConverterFactory {
+import org.kie.workbench.common.stunner.bpmn.backend.converters.TypedFactoryManager;
+import org.kie.workbench.common.stunner.bpmn.backend.converters.tostunner.BaseConverterFactory;
+import org.kie.workbench.common.stunner.bpmn.backend.converters.tostunner.DefinitionResolver;
+import org.kie.workbench.common.stunner.cm.backend.converters.tostunner.activities.CaseManagementCallActivityConverter;
+import org.kie.workbench.common.stunner.cm.backend.converters.tostunner.processes.CaseManagementSubProcessConverter;
+import org.kie.workbench.common.stunner.cm.definition.AdHocSubprocess;
+import org.kie.workbench.common.stunner.cm.definition.CaseManagementDiagram;
+import org.kie.workbench.common.stunner.cm.definition.EmbeddedSubprocess;
+import org.kie.workbench.common.stunner.cm.definition.ReusableSubprocess;
 
+public class CaseManagementConverterFactory extends BaseConverterFactory<CaseManagementDiagram,
+        AdHocSubprocess, EmbeddedSubprocess, ReusableSubprocess> {
+
+    public CaseManagementConverterFactory(DefinitionResolver definitionResolver, TypedFactoryManager factoryManager) {
+        super(definitionResolver, factoryManager);
+    }
+
+    @Override
+    public CaseManagementSubProcessConverter subProcessConverter() {
+        return new CaseManagementSubProcessConverter(factoryManager,
+                                                     propertyReaderFactory,
+                                                     definitionResolver,
+                                                     this);
+    }
+
+    @Override
+    protected CaseManagementCallActivityConverter createCallActivityConverter() {
+        return new CaseManagementCallActivityConverter(factoryManager, propertyReaderFactory, this);
+    }
+
+    @Override
+    public Class<CaseManagementDiagram> getDiagramClass() {
+        return CaseManagementDiagram.class;
+    }
+
+    @Override
+    public Class<ReusableSubprocess> getReusableSubprocessClass() {
+        return ReusableSubprocess.class;
+    }
+
+    @Override
+    public Class<AdHocSubprocess> getAdhocSubprocessClass() {
+        return AdHocSubprocess.class;
+    }
+
+    @Override
+    public Class<EmbeddedSubprocess> getEmbeddedSubprocessClass() {
+        return EmbeddedSubprocess.class;
+    }
 }
