@@ -25,13 +25,25 @@ import org.kie.workbench.common.stunner.bpmn.definition.ReusableSubprocess;
 
 public class SubProcessConverter extends BaseSubProcessConverter<AdHocSubprocess, EmbeddedSubprocess, ReusableSubprocess> {
 
+    private final ConverterFactory converterFactory;
+
     public SubProcessConverter(DefinitionsBuildingContext context,
                                PropertyWriterFactory propertyWriterFactory,
                                ConverterFactory converterFactory) {
         super(context,
               propertyWriterFactory,
-              converterFactory,
-              AdHocSubprocess.class,
-              EmbeddedSubprocess.class);
+              converterFactory);
+
+        this.converterFactory = converterFactory;
+    }
+
+    @Override
+    protected Class<AdHocSubprocess> getAdhocSubprocessClass() {
+        return converterFactory.getAdhocSubprocessClass();
+    }
+
+    @Override
+    protected Class<EmbeddedSubprocess> getEmbeddedSubprocessClass() {
+        return converterFactory.getEmbeddedSubprocessClass();
     }
 }

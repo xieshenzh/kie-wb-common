@@ -20,12 +20,12 @@ import java.util.Map;
 
 import org.eclipse.bpmn2.Process;
 import org.kie.workbench.common.stunner.bpmn.backend.converters.TypedFactoryManager;
+import org.kie.workbench.common.stunner.bpmn.backend.converters.tostunner.BaseConverterFactory;
 import org.kie.workbench.common.stunner.bpmn.backend.converters.tostunner.BpmnNode;
-import org.kie.workbench.common.stunner.bpmn.backend.converters.tostunner.ConverterFactory;
 import org.kie.workbench.common.stunner.bpmn.backend.converters.tostunner.DefinitionResolver;
 import org.kie.workbench.common.stunner.bpmn.backend.converters.tostunner.properties.ProcessPropertyReader;
 import org.kie.workbench.common.stunner.bpmn.backend.converters.tostunner.properties.PropertyReaderFactory;
-import org.kie.workbench.common.stunner.bpmn.definition.BPMNDiagramImpl;
+import org.kie.workbench.common.stunner.bpmn.definition.BPMNDiagram;
 import org.kie.workbench.common.stunner.bpmn.definition.property.cm.CaseManagementSet;
 import org.kie.workbench.common.stunner.bpmn.definition.property.cm.CaseRoles;
 import org.kie.workbench.common.stunner.bpmn.definition.property.diagram.AdHoc;
@@ -46,21 +46,24 @@ import org.kie.workbench.common.stunner.core.graph.content.view.View;
 /**
  * Convert the root Process with all its children to a BPMNDiagram
  */
-public class RootProcessConverter {
+public class RootProcessConverter<D extends BPMNDiagram>  {
 
     private final ProcessConverterDelegate delegate;
+    private final BaseConverterFactory<D, ?, ?, ?> converterFactory;
 
     public RootProcessConverter(
             TypedFactoryManager typedFactoryManager,
             PropertyReaderFactory propertyReaderFactory,
             DefinitionResolver definitionResolver,
-            ConverterFactory factory) {
+            BaseConverterFactory<D, ?, ?, ?> factory) {
 
         this.delegate = new ProcessConverterDelegate(
                 typedFactoryManager,
                 propertyReaderFactory,
                 definitionResolver,
                 factory);
+
+        this.converterFactory = factory;
     }
 
     public BpmnNode convertProcess() {
@@ -83,9 +86,9 @@ public class RootProcessConverter {
     }
 
     private BpmnNode convertProcessNode(String id, Process process) {
-        Node<View<BPMNDiagramImpl>, Edge> diagramNode =
-                delegate.factoryManager.newNode(id, BPMNDiagramImpl.class);
-        BPMNDiagramImpl definition = diagramNode.getContent().getDefinition();
+        Node<View<D>, Edge> diagramNode =
+                delegate.factoryManager.newNode(id, converterFactory.getDiagramClass());
+        D definition = diagramNode.getContent().getDefinition();
 
         ProcessPropertyReader e = delegate.propertyReaderFactory.of(process);
 

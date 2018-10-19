@@ -21,7 +21,7 @@ import org.kie.workbench.common.stunner.bpmn.backend.converters.fromstunner.Base
 import org.kie.workbench.common.stunner.bpmn.backend.converters.fromstunner.DefinitionsBuildingContext;
 import org.kie.workbench.common.stunner.bpmn.backend.converters.fromstunner.properties.ProcessPropertyWriter;
 import org.kie.workbench.common.stunner.bpmn.backend.converters.fromstunner.properties.PropertyWriterFactory;
-import org.kie.workbench.common.stunner.bpmn.definition.BPMNDiagramImpl;
+import org.kie.workbench.common.stunner.bpmn.definition.BPMNDiagram;
 import org.kie.workbench.common.stunner.bpmn.definition.BaseAdHocSubprocess;
 import org.kie.workbench.common.stunner.bpmn.definition.BaseEmbeddedSubprocess;
 import org.kie.workbench.common.stunner.bpmn.definition.BaseReusableSubprocess;
@@ -33,8 +33,8 @@ import org.kie.workbench.common.stunner.core.graph.content.definition.Definition
 
 import static org.kie.workbench.common.stunner.bpmn.backend.converters.fromstunner.Factories.bpmn2;
 
-public class RootProcessConverter<A extends BaseAdHocSubprocess,
-        E extends BaseEmbeddedSubprocess, R extends BaseReusableSubprocess> {
+public class RootProcessConverter<D extends BPMNDiagram,
+        A extends BaseAdHocSubprocess, E extends BaseEmbeddedSubprocess, R extends BaseReusableSubprocess> {
 
     private final ProcessConverterDelegate<A, E, R> delegate;
     private final DefinitionsBuildingContext context;
@@ -42,7 +42,7 @@ public class RootProcessConverter<A extends BaseAdHocSubprocess,
 
     public RootProcessConverter(DefinitionsBuildingContext context,
                                 PropertyWriterFactory propertyWriterFactory,
-                                BaseConverterFactory<A, E, R> converterFactory) {
+                                BaseConverterFactory<D, A, E, R> converterFactory) {
         this.delegate = new ProcessConverterDelegate<>(converterFactory);
         this.context = context;
         this.propertyWriterFactory = propertyWriterFactory;
@@ -57,11 +57,11 @@ public class RootProcessConverter<A extends BaseAdHocSubprocess,
         return processRoot;
     }
 
-    private ProcessPropertyWriter convertProcessNode(Node<Definition<BPMNDiagramImpl>, ?> node) {
+    private ProcessPropertyWriter convertProcessNode(Node<Definition<D>, ?> node) {
         Process process = bpmn2.createProcess();
 
         ProcessPropertyWriter p = propertyWriterFactory.of(process);
-        BPMNDiagramImpl definition = node.getContent().getDefinition();
+        D definition = node.getContent().getDefinition();
 
         DiagramSet diagramSet = definition.getDiagramSet();
 

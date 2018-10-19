@@ -27,18 +27,20 @@ import org.kie.workbench.common.stunner.bpmn.backend.converters.fromstunner.proc
 import org.kie.workbench.common.stunner.bpmn.backend.converters.fromstunner.properties.PropertyWriterFactory;
 import org.kie.workbench.common.stunner.bpmn.backend.converters.fromstunner.sequenceflows.SequenceFlowConverter;
 import org.kie.workbench.common.stunner.bpmn.backend.converters.fromstunner.tasks.TaskConverter;
+import org.kie.workbench.common.stunner.bpmn.definition.BPMNDiagram;
 import org.kie.workbench.common.stunner.bpmn.definition.BaseAdHocSubprocess;
 import org.kie.workbench.common.stunner.bpmn.definition.BaseEmbeddedSubprocess;
 import org.kie.workbench.common.stunner.bpmn.definition.BaseReusableSubprocess;
 
-public abstract class BaseConverterFactory<A extends BaseAdHocSubprocess,
+public abstract class BaseConverterFactory<D extends BPMNDiagram,
+        A extends BaseAdHocSubprocess,
         E extends BaseEmbeddedSubprocess,
         R extends BaseReusableSubprocess> {
 
     protected final PropertyWriterFactory propertyWriterFactory;
 
     private final TaskConverter taskConverter;
-    private final FlowElementConverter<R> flowElementConverter;
+    private final BaseFlowElementConverter<R> flowElementConverter;
     private final StartEventConverter startEventConverter;
     private final IntermediateCatchEventConverter intermediateCatchEventConverter;
     private final IntermediateThrowEventConverter intermediateThrowEventConverter;
@@ -50,8 +52,7 @@ public abstract class BaseConverterFactory<A extends BaseAdHocSubprocess,
 
     public BaseConverterFactory(DefinitionsBuildingContext context,
                                 PropertyWriterFactory propertyWriterFactory,
-                                BaseReusableSubprocessConverter<R> reusableSubprocessConverter,
-                                Class<R> reusableSubprocessClass) {
+                                BaseReusableSubprocessConverter<R> reusableSubprocessConverter) {
         this.context = context;
         this.propertyWriterFactory = propertyWriterFactory;
 
@@ -63,7 +64,7 @@ public abstract class BaseConverterFactory<A extends BaseAdHocSubprocess,
         this.laneConverter = new LaneConverter(propertyWriterFactory);
         this.gatewayConverter = new GatewayConverter(propertyWriterFactory);
 
-        this.flowElementConverter = new FlowElementConverter<>(this, reusableSubprocessClass);
+        this.flowElementConverter = createFlowElementConverter();
         this.reusableSubprocessConverter = reusableSubprocessConverter;
     }
 
@@ -71,7 +72,7 @@ public abstract class BaseConverterFactory<A extends BaseAdHocSubprocess,
         return taskConverter;
     }
 
-    public FlowElementConverter<R> viewDefinitionConverter() {
+    public BaseFlowElementConverter<R> viewDefinitionConverter() {
         return flowElementConverter;
     }
 
@@ -103,7 +104,7 @@ public abstract class BaseConverterFactory<A extends BaseAdHocSubprocess,
         return reusableSubprocessConverter;
     }
 
-    public RootProcessConverter<A, E, R> processConverter() {
+    public RootProcessConverter<D, A, E, R> processConverter() {
         return new RootProcessConverter<>(context, propertyWriterFactory, this);
     }
 
@@ -113,4 +114,13 @@ public abstract class BaseConverterFactory<A extends BaseAdHocSubprocess,
         return new SequenceFlowConverter(propertyWriterFactory);
     }
 
+    protected abstract BaseFlowElementConverter<R> createFlowElementConverter();
+
+    public abstract Class<D> getDiagramClass();
+
+    public abstract Class<A> getAdhocSubprocessClass();
+
+    public abstract Class<E> getEmbeddedSubprocessClass();
+
+    public abstract Class<R> getReusableSubprocessClass();
 }

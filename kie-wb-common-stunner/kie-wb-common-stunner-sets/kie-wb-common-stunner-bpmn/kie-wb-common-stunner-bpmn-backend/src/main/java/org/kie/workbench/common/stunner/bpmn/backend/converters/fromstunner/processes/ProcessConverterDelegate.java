@@ -39,9 +39,9 @@ import static java.util.stream.Collectors.toSet;
 class ProcessConverterDelegate<A extends BaseAdHocSubprocess,
         E extends BaseEmbeddedSubprocess, R extends BaseReusableSubprocess> {
 
-    private final BaseConverterFactory<A, E, R> converterFactory;
+    private final BaseConverterFactory<?, A, E, R> converterFactory;
 
-    ProcessConverterDelegate(BaseConverterFactory<A, E, R> converterFactory) {
+    ProcessConverterDelegate(BaseConverterFactory<?, A, E, R> converterFactory) {
         this.converterFactory = converterFactory;
     }
 

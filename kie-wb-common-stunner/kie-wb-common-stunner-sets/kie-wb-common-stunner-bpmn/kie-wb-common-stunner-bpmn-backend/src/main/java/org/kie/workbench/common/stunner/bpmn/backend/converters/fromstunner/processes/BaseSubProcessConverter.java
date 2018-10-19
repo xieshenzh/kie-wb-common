@@ -46,33 +46,25 @@ public abstract class BaseSubProcessConverter<A extends BaseAdHocSubprocess,
         E extends BaseEmbeddedSubprocess, R extends BaseReusableSubprocess>
         extends ProcessConverterDelegate<A, E, R>  {
 
-    private final Class<A> adhocSubprocessClass;
-    private final Class<E> embeddedSubprocessClass;
-
     private final DefinitionsBuildingContext context;
     private final PropertyWriterFactory propertyWriterFactory;
 
     public BaseSubProcessConverter(
             DefinitionsBuildingContext context,
             PropertyWriterFactory propertyWriterFactory,
-            BaseConverterFactory<A, E, R> converterFactory,
-            Class<A> adhocSubprocessClass,
-            Class<E> embeddedSubprocessClass) {
+            BaseConverterFactory<?, A, E, R> converterFactory) {
 
         super(converterFactory);
         this.context = context;
         this.propertyWriterFactory = propertyWriterFactory;
-
-        this.adhocSubprocessClass = adhocSubprocessClass;
-        this.embeddedSubprocessClass = embeddedSubprocessClass;
     }
 
     public Result<SubProcessPropertyWriter> convertSubProcess(Node<View<? extends BPMNViewDefinition>, ?> node) {
         Result<SubProcessPropertyWriter> processRootResult =
                 NodeMatch.fromNode(BaseSubprocess.class, SubProcessPropertyWriter.class)
-                        .when(embeddedSubprocessClass, this::convertEmbeddedSubprocessNode)
+                        .when(getEmbeddedSubprocessClass(), this::convertEmbeddedSubprocessNode)
                         .when(EventSubprocess.class, this::convertEventSubprocessNode)
-                        .when(adhocSubprocessClass, this::convertAdHocSubprocessNode)
+                        .when(getAdhocSubprocessClass(), this::convertAdHocSubprocessNode)
                         .when(MultipleInstanceSubprocess.class, this::convertMultipleInstanceSubprocessNode)
                         .ignore(BPMNViewDefinition.class)
                         .apply(node);
@@ -201,4 +193,8 @@ public abstract class BaseSubProcessConverter<A extends BaseAdHocSubprocess,
         p.setBounds(n.getContent().getBounds());
         return p;
     }
+
+    protected abstract Class<A> getAdhocSubprocessClass();
+
+    protected abstract Class<E> getEmbeddedSubprocessClass();
 }
