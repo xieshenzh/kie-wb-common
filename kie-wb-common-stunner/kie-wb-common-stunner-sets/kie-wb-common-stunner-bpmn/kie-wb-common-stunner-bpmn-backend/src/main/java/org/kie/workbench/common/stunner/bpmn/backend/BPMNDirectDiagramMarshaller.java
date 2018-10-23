@@ -19,9 +19,13 @@ package org.kie.workbench.common.stunner.bpmn.backend;
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
+import org.kie.workbench.common.stunner.bpmn.BPMNDefinitionSet;
+import org.kie.workbench.common.stunner.bpmn.backend.converters.TypedFactoryManager;
 import org.kie.workbench.common.stunner.bpmn.backend.converters.fromstunner.ConverterFactory;
 import org.kie.workbench.common.stunner.bpmn.backend.converters.fromstunner.DefinitionsBuildingContext;
 import org.kie.workbench.common.stunner.bpmn.backend.converters.fromstunner.properties.PropertyWriterFactory;
+import org.kie.workbench.common.stunner.bpmn.backend.converters.tostunner.BaseConverterFactory;
+import org.kie.workbench.common.stunner.bpmn.backend.converters.tostunner.DefinitionResolver;
 import org.kie.workbench.common.stunner.bpmn.backend.workitem.service.WorkItemDefinitionBackendService;
 import org.kie.workbench.common.stunner.core.api.DefinitionManager;
 import org.kie.workbench.common.stunner.core.api.FactoryManager;
@@ -57,12 +61,20 @@ public class BPMNDirectDiagramMarshaller extends BaseDirectDiagramMarshaller {
     protected org.kie.workbench.common.stunner.bpmn.backend.converters.fromstunner.BaseConverterFactory createFromStunnerConverterFactory(
             final Graph graph,
             final PropertyWriterFactory propertyWriterFactory) {
-        return new ConverterFactory(new DefinitionsBuildingContext(graph),
+        return new org.kie.workbench.common.stunner.bpmn.backend.converters.fromstunner.ConverterFactory(new DefinitionsBuildingContext(graph),
                                     propertyWriterFactory);
     }
 
     @Override
-    protected org.kie.workbench.common.stunner.bpmn.backend.converters.tostunner.ConverterFactory createToStunnerConverterFactory() {
-        return null;
+    protected org.kie.workbench.common.stunner.bpmn.backend.converters.tostunner.BaseConverterFactory createToStunnerConverterFactory(
+            final DefinitionResolver definitionResolver,
+            final TypedFactoryManager typedFactoryManager) {
+        return new org.kie.workbench.common.stunner.bpmn.backend.converters.tostunner.ConverterFactory(definitionResolver,
+                                                                                                       typedFactoryManager);
+    }
+
+    @Override
+    protected Class<?> getDefinitionSetClass() {
+        return BPMNDefinitionSet.class;
     }
 }

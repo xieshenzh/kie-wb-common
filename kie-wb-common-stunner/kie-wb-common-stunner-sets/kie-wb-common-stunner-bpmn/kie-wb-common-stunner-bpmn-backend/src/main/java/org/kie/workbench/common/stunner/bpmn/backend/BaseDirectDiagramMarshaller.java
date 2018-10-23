@@ -36,12 +36,11 @@ import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.jboss.drools.DroolsPackage;
 import org.jboss.drools.impl.DroolsFactoryImpl;
 import org.jboss.drools.impl.DroolsPackageImpl;
-import org.kie.workbench.common.stunner.bpmn.BPMNDefinitionSet;
 import org.kie.workbench.common.stunner.bpmn.backend.converters.TypedFactoryManager;
 import org.kie.workbench.common.stunner.bpmn.backend.converters.fromstunner.DefinitionsConverter;
 import org.kie.workbench.common.stunner.bpmn.backend.converters.fromstunner.properties.PropertyWriterFactory;
+import org.kie.workbench.common.stunner.bpmn.backend.converters.tostunner.BaseConverterFactory;
 import org.kie.workbench.common.stunner.bpmn.backend.converters.tostunner.BpmnNode;
-import org.kie.workbench.common.stunner.bpmn.backend.converters.tostunner.ConverterFactory;
 import org.kie.workbench.common.stunner.bpmn.backend.converters.tostunner.DefinitionResolver;
 import org.kie.workbench.common.stunner.bpmn.backend.converters.tostunner.GraphBuilder;
 import org.kie.workbench.common.stunner.bpmn.backend.legacy.resource.JBPMBpmn2ResourceFactoryImpl;
@@ -142,8 +141,8 @@ public abstract class BaseDirectDiagramMarshaller implements DiagramMarshaller<G
         metadata.setCanvasRootUUID(definitionResolver.getDefinitions().getId());
         metadata.setTitle(definitionResolver.getProcess().getName());
 
-        ConverterFactory converterFactory =
-                new ConverterFactory(definitionResolver, typedFactoryManager);
+        BaseConverterFactory converterFactory =
+                createToStunnerConverterFactory(definitionResolver, typedFactoryManager);
 
         // perform actual conversion. Process is the root of the diagram
         BpmnNode diagramRoot =
@@ -160,7 +159,7 @@ public abstract class BaseDirectDiagramMarshaller implements DiagramMarshaller<G
         Diagram<Graph<DefinitionSet, Node>, Metadata> diagram =
                 typedFactoryManager.newDiagram(
                         definitionResolver.getDefinitions().getId(),
-                        BPMNDefinitionSet.class,
+                        getDefinitionSetClass(),
                         metadata);
         GraphBuilder graphBuilder =
                 new GraphBuilder(
@@ -239,5 +238,9 @@ public abstract class BaseDirectDiagramMarshaller implements DiagramMarshaller<G
             final Graph graph,
             final PropertyWriterFactory propertyWriterFactory);
 
-    protected abstract org.kie.workbench.common.stunner.bpmn.backend.converters.tostunner.ConverterFactory createToStunnerConverterFactory();
+    protected abstract org.kie.workbench.common.stunner.bpmn.backend.converters.tostunner.BaseConverterFactory createToStunnerConverterFactory(
+            final DefinitionResolver definitionResolver,
+            final TypedFactoryManager typedFactoryManager);
+
+    protected abstract Class<?> getDefinitionSetClass();
 }
