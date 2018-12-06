@@ -21,12 +21,12 @@ import java.util.stream.Collectors;
 
 import com.ait.lienzo.client.core.shape.Group;
 import com.ait.lienzo.client.core.shape.MultiPath;
+import com.ait.lienzo.client.core.shape.wires.ILayoutHandler;
 import com.ait.lienzo.client.core.shape.wires.WiresShape;
 import com.ait.lienzo.shared.core.types.ColorName;
 import com.ait.tooling.nativetools.client.collection.NFastArrayList;
 import org.kie.workbench.common.stunner.client.lienzo.shape.impl.ShapeStateDefaultHandler;
 import org.kie.workbench.common.stunner.client.lienzo.shape.view.wires.WiresShapeView;
-import org.kie.workbench.common.stunner.cm.client.wires.VerticalStackLayoutManager;
 import org.kie.workbench.common.stunner.core.client.shape.view.HasSize;
 import org.kie.workbench.common.stunner.svg.client.shape.view.SVGPrimitiveShape;
 import org.kie.workbench.common.stunner.svg.client.shape.view.impl.SVGShapeViewImpl;
@@ -81,7 +81,13 @@ public class CaseManagementShapeView extends SVGShapeViewImpl implements HasSize
         if (original == null || replacement == null || replacement.getParent() == this) {
             return;
         }
-        getChildShapes().set(getIndex(original), replacement);
+
+        int index = getIndex(original);
+        if (index < 0) {
+            return;
+        }
+
+        getChildShapes().set(index, replacement);
         getContainer().getChildNodes().set(getNodeIndex(original.getGroup()), replacement.getGroup());
 
         original.setParent(null);
@@ -119,7 +125,7 @@ public class CaseManagementShapeView extends SVGShapeViewImpl implements HasSize
                 return i;
             }
         }
-        return children.size();
+        return -1;
     }
 
     private boolean isUUIDSame(WiresShape shape, WiresShape child) {
@@ -156,16 +162,25 @@ public class CaseManagementShapeView extends SVGShapeViewImpl implements HasSize
         return ghost;
     }
 
-    protected CaseManagementShapeView createGhost() {
+    private CaseManagementShapeView createGhost() {
 
-        CaseManagementShapeView thisGhost = new CaseManagementShapeView(shapeLabel,
-                                                                        new SVGPrimitiveShape(getShape().copy()),
-                                                                        currentWidth, currentHeight, false);
-        thisGhost.setLayoutHandler(new VerticalStackLayoutManager());
+        CaseManagementShapeView thisGhost = createGhostShapeView(shapeLabel, currentWidth, currentHeight);
+
+        thisGhost.setLayoutHandler(createGhostLayoutHandler());
 
         for (WiresShape wiresShape : getChildShapes()) {
             thisGhost.add(((CaseManagementShapeView) wiresShape).getGhost());
         }
         return thisGhost;
+    }
+
+    protected CaseManagementShapeView createGhostShapeView(String shapeLabel, double width, double height) {
+        return new CaseManagementShapeView(shapeLabel,
+                                           new SVGPrimitiveShape(getShape().copy()),
+                                           width, height, false);
+    }
+
+    protected ILayoutHandler createGhostLayoutHandler() {
+        return ILayoutHandler.NONE;
     }
 }

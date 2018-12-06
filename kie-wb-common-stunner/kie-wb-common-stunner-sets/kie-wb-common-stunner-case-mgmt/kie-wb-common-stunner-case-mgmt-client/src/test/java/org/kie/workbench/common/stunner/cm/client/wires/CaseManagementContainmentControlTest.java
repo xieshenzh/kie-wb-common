@@ -36,11 +36,13 @@ import com.ait.tooling.nativetools.client.collection.NFastArrayList;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.kie.workbench.common.stunner.cm.client.shape.view.CaseManagementDiagramShapeView;
 import org.kie.workbench.common.stunner.cm.client.shape.view.CaseManagementShapeView;
 import org.mockito.Mock;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -193,7 +195,7 @@ public class CaseManagementContainmentControlTest {
         control.onMove(x, y);
         verify(containmentControl, times(1)).onMove(eq(x),
                                                     eq(y));
-        verify(parentLayoutHandler, never()).add(eq(ghost),
+        verify(parentLayoutHandler, times(1)).add(eq(ghost),
                                                   eq(parent),
                                                   eq(new Point2D(x, y)));
         verify(parentPickerControl, times(1)).rebuildPicker();
@@ -262,7 +264,7 @@ public class CaseManagementContainmentControlTest {
     @Test
     public void testReset() {
         control.reset();
-        verify(ghost, times(2)).removeFromParent();
+        verify(ghost, times(1)).removeFromParent();
         verify(parent, times(1)).addShape(eq(shape),
                                           eq(0));
         verify(state, times(1)).setGhost(Optional.empty());
@@ -282,5 +284,26 @@ public class CaseManagementContainmentControlTest {
         verify(containmentControl, times(1)).execute();
         verify(ghost, atLeast(1)).removeFromParent();
         verify(ghostParent, times(1)).addShape(eq(shape), eq(1));
+    }
+
+    @Test
+    public void testGetShapeIndex_diagram() throws Exception {
+        when(containmentControl.getShape()).thenReturn(mock(CaseManagementDiagramShapeView.class));
+        Integer result = control.getShapeIndex();
+        assertEquals(Integer.valueOf(0), result);
+    }
+
+    @Test
+    public void testGetShapeIndex_noShape() throws Exception {
+        when(containmentControl.getShape()).thenReturn(null);
+        Integer result = control.getShapeIndex();
+        assertNull(result);
+    }
+
+    @Test
+    public void testGetShapeIndex_noParent() throws Exception {
+        when(containmentControl.getParent()).thenReturn(null);
+        Integer result = control.getShapeIndex();
+        assertNull(result);
     }
 }

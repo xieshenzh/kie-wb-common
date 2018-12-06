@@ -18,7 +18,6 @@ package org.kie.workbench.common.stunner.cm.client.canvas.controls.containment;
 
 import java.util.Collections;
 import java.util.Optional;
-import java.util.UUID;
 
 import com.ait.lienzo.client.core.shape.Rectangle;
 import com.ait.lienzo.client.core.shape.wires.IContainmentAcceptor;
@@ -26,7 +25,6 @@ import com.ait.lienzo.client.core.shape.wires.ILayoutHandler;
 import com.ait.lienzo.client.core.shape.wires.WiresContainer;
 import com.ait.lienzo.client.core.shape.wires.WiresManager;
 import com.ait.lienzo.client.core.shape.wires.WiresShape;
-import com.ait.lienzo.client.core.types.Point2D;
 import com.ait.lienzo.test.LienzoMockitoTestRunner;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,13 +50,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -255,6 +251,7 @@ public class CaseManagementContainmentAcceptorControlImplTest {
         final WiresShape childShape = makeWiresShape(CANDIDATE_UUID);
         final CaseManagementShapeView ghost = makeWiresShape(CANDIDATE_UUID);
         state.setGhost(Optional.of(ghost));
+        parentShape.add(ghost);
         final boolean isAccept =
                 control.containmentAcceptor.acceptContainment(parentShape,
                                                               new WiresShape[]{childShape});
@@ -289,106 +286,5 @@ public class CaseManagementContainmentAcceptorControlImplTest {
                              parentShape);
 
         assertTrue(parentShape.getLayoutHandler() instanceof ILayoutHandler.DefaultLayoutHandler);
-    }
-
-    @Test
-    public void testAcceptContainmentIndex_verticalSameParent() {
-
-        control.init(canvasHandler);
-
-        when(parent.getInEdges()).thenReturn(Collections.singletonList(parentEdge));
-
-        final WiresShape parentShape = makeWiresShape(PARENT_UUID);
-        final WiresShape childShape = makeWiresShape(CANDIDATE_UUID);
-
-        state.setOriginalParent(Optional.of(parentShape));
-
-        int result = ((CaseManagementContainmentAcceptorControlImpl.CanvasManagementContainmentAcceptor) control.containmentAcceptor).getAddIndex(childShape, parentShape);
-
-        assertEquals(0, result);
-    }
-
-    @Test
-    public void testAcceptContainmentIndex_verticalDifferentParent() {
-
-        control.init(canvasHandler);
-
-        when(parent.getInEdges()).thenReturn(Collections.singletonList(parentEdge));
-
-        final WiresShape parentShape = makeWiresShape(PARENT_UUID);
-        final WiresShape childShape = makeWiresShape(CANDIDATE_UUID);
-
-        state.setOriginalParent(Optional.of(makeWiresShape()));
-
-        int result = ((CaseManagementContainmentAcceptorControlImpl.CanvasManagementContainmentAcceptor) control.containmentAcceptor).getAddIndex(childShape, parentShape);
-
-        assertEquals(1, result);
-    }
-
-    @Test
-    public void testAcceptContainmentIndex_horizontal() {
-
-        control.init(canvasHandler);
-
-        when(parent.getInEdges()).thenReturn(Collections.emptyList());
-
-        final WiresShape parentShape = makeWiresShape(PARENT_UUID);
-        final WiresShape childShape = makeWiresShape(CANDIDATE_UUID);
-
-        CaseManagementShapeView mockChildShape = spy((CaseManagementShapeView) makeWiresShape());
-        when(mockChildShape.getComputedLocation()).thenReturn(new Point2D(10.0d, 10.0d));
-        when(mockChildShape.getUUID()).thenReturn(UUID.randomUUID().toString());
-
-        parentShape.add(makeWiresShape(UUID.randomUUID().toString()));
-        parentShape.add(makeWiresShape(UUID.randomUUID().toString()));
-        parentShape.add(mockChildShape);
-
-        state.setGhost(Optional.of(makeWiresShape(CANDIDATE_UUID)));
-
-        int result = ((CaseManagementContainmentAcceptorControlImpl.CanvasManagementContainmentAcceptor) control.containmentAcceptor).getAddIndex(childShape, parentShape);
-
-        assertEquals(2, result);
-    }
-
-    @Test
-    public void testAcceptContainmentIndex_horizontalDifferentParent() {
-
-        control.init(canvasHandler);
-
-        when(parent.getInEdges()).thenReturn(Collections.emptyList());
-
-        final WiresShape parentShape = makeWiresShape(PARENT_UUID);
-        final WiresShape childShape = makeWiresShape(CANDIDATE_UUID);
-
-        parentShape.add(makeWiresShape(UUID.randomUUID().toString()));
-
-        state.setGhost(Optional.of(makeWiresShape(CANDIDATE_UUID)));
-
-        int result = ((CaseManagementContainmentAcceptorControlImpl.CanvasManagementContainmentAcceptor) control.containmentAcceptor).getAddIndex(childShape, parentShape);
-
-        assertEquals(1, result);
-    }
-
-    @Test
-    public void testAcceptContainmentIndex_horizontalSameParent() {
-
-        control.init(canvasHandler);
-
-        when(parent.getInEdges()).thenReturn(Collections.emptyList());
-
-        final WiresShape parentShape = makeWiresShape(PARENT_UUID);
-        final WiresShape childShape = makeWiresShape(CANDIDATE_UUID);
-
-        parentShape.add(makeWiresShape(UUID.randomUUID().toString()));
-
-        CaseManagementShapeView ghost = makeWiresShape(CANDIDATE_UUID);
-        parentShape.add(ghost);
-
-        state.setGhost(Optional.of(ghost));
-        state.setOriginalIndex(Optional.of(parentShape.getChildShapes().size() - 1));
-
-        int result = ((CaseManagementContainmentAcceptorControlImpl.CanvasManagementContainmentAcceptor) control.containmentAcceptor).getAddIndex(childShape, parentShape);
-
-        assertEquals(1, result);
     }
 }

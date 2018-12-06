@@ -27,6 +27,7 @@ import com.ait.lienzo.client.core.shape.wires.handlers.impl.WiresContainmentCont
 import com.ait.lienzo.client.core.shape.wires.handlers.impl.WiresParentPickerControlImpl;
 import com.ait.lienzo.client.core.types.Point2D;
 import org.kie.workbench.common.stunner.client.lienzo.shape.view.wires.ext.WiresShapeViewExt;
+import org.kie.workbench.common.stunner.cm.client.shape.view.CaseManagementDiagramShapeView;
 import org.kie.workbench.common.stunner.cm.client.shape.view.CaseManagementShapeView;
 
 public class CaseManagementContainmentControl implements WiresContainmentControl {
@@ -82,14 +83,24 @@ public class CaseManagementContainmentControl implements WiresContainmentControl
     @Override
     public boolean onMove(double dx,
                           double dy) {
-        containmentControl.onMove(dx,
-                                  dy);
+        containmentControl.onMove(dx, dy);
 
         //Handle moving ghost from one container to another
         final Optional<CaseManagementShapeView> ghost = state.getGhost();
         if (ghost.isPresent() && null != getParent() && null != getParent().getGroup()) {
             if (getWiresManager().getContainmentAcceptor().containmentAllowed(getParent(),
                                                                               new WiresShape[]{getShape()})) {
+                final double mouseX = containmentControl.getParentPickerControl().getShapeLocationControl().getMouseStartX() + dx;
+                final double mouseY = containmentControl.getParentPickerControl().getShapeLocationControl().getMouseStartY() + dy;
+                final Point2D parentAbsLoc = getParent().getGroup().getComputedLocation();
+                final Point2D mouseRelativeLoc = new Point2D(mouseX - parentAbsLoc.getX(),
+                                                             mouseY - parentAbsLoc.getY());
+
+                //Children contains m_ghost and others excluding m_shape. This therefore moves m_ghost within children.
+                getParent().getLayoutHandler().add(ghost.get(),
+                                                   getParent(),
+                                                   mouseRelativeLoc);
+
                 containmentControl.getParentPickerControl().rebuildPicker();
             }
         }
@@ -154,7 +165,6 @@ public class CaseManagementContainmentControl implements WiresContainmentControl
     }
 
     private void clearState() {
-        state.getGhost().ifPresent(WiresShape::removeFromParent);
         state.getGhost().ifPresent(WiresShapeViewExt::destroy);
         state.setGhost(Optional.empty());
         state.setOriginalIndex(Optional.empty());
@@ -197,12 +207,17 @@ public class CaseManagementContainmentControl implements WiresContainmentControl
         return getShape().getWiresManager();
     }
 
-    private Integer getShapeIndex() {
-        if (!(getParent() instanceof CaseManagementShapeView) || getShape() == null) {
+    Integer getShapeIndex() {
+        if ((getShape() instanceof CaseManagementDiagramShapeView)) {
             return 0;
         }
 
-        return ((CaseManagementShapeView) getParent()).getIndex(getShape());
+        if (!(getParent() instanceof CaseManagementShapeView) || getShape() == null) {
+            return null;
+        }
+
+        int index = ((CaseManagementShapeView) getParent()).getIndex(getShape());
+        return index >= 0 ? index : null;
     }
 
     private void restore(final CaseManagementShapeView ghost,
@@ -238,7 +253,7 @@ public class CaseManagementContainmentControl implements WiresContainmentControl
         if (ghost.getParent() != null) {
             final CaseManagementShapeView ghostContainer = (CaseManagementShapeView) ghost.getParent();
             final int ghostIndex = ghostContainer.getIndex(ghost);
-            if (ghostContainer instanceof CaseManagementShapeView) {
+            if (ghostContainer instanceof CaseManagementShapeView && ghostIndex >= 0) {
                 restore(ghost,
                         ghostContainer,
                         ghostIndex);
