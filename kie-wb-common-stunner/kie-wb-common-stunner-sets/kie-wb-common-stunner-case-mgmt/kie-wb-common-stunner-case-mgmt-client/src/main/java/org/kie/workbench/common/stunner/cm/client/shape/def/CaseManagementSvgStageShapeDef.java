@@ -64,5 +64,4 @@ public class CaseManagementSvgStageShapeDef extends BaseDimensionedShapeDef
                           final String defId) {
         return CaseManagementSVGGlyphFactory.STAGE_GLYPH;
     }
-
 }
