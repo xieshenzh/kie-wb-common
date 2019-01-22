@@ -58,7 +58,7 @@ public class CaseManagementAdHocSubProcessPropertyReaderTest {
         CustomElement.autoStart.of(adHocSubProcess).set(Boolean.TRUE);
 
         tested = new CaseManagementAdHocSubProcessPropertyReader(adHocSubProcess,
-                                                                 definitionResolver.getPlane(),
+                                                                 definitionResolver.getDiagram(),
                                                                  definitionResolver);
 
         assertTrue(tested.isAdHocAutostart());
@@ -73,7 +73,7 @@ public class CaseManagementAdHocSubProcessPropertyReaderTest {
         CustomElement.autoStart.of(adHocSubProcess).set(Boolean.FALSE);
 
         tested = new CaseManagementAdHocSubProcessPropertyReader(adHocSubProcess,
-                                                                 definitionResolver.getPlane(),
+                                                                 definitionResolver.getDiagram(),
                                                                  definitionResolver);
 
         assertFalse(tested.isAdHocAutostart());

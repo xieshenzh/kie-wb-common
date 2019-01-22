@@ -89,7 +89,7 @@ public class CaseManagementActivityPropertyReaderTest {
         CustomElement.autoStart.of(callActivity).set(Boolean.TRUE);
 
         tested = new CaseManagementActivityPropertyReader(callActivity,
-                                                          definitionResolver.getPlane(),
+                                                          definitionResolver.getDiagram(),
                                                           definitionResolver);
 
         assertTrue(tested.isAdHocAutostart());
@@ -104,7 +104,7 @@ public class CaseManagementActivityPropertyReaderTest {
         CustomElement.autoStart.of(callActivity).set(Boolean.FALSE);
 
         tested = new CaseManagementActivityPropertyReader(callActivity,
-                                                          definitionResolver.getPlane(),
+                                                          definitionResolver.getDiagram(),
                                                           definitionResolver);
 
         assertFalse(tested.isAdHocAutostart());
