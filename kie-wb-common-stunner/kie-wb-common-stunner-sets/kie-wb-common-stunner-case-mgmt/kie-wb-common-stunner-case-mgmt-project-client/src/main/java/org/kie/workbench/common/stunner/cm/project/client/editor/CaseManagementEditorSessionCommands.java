@@ -20,6 +20,7 @@ import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
 import org.kie.workbench.common.stunner.bpmn.project.client.editor.AbstractProcessEditorSessionCommands;
+import org.kie.workbench.common.stunner.cm.project.client.session.command.SwitchViewSessionCommand;
 import org.kie.workbench.common.stunner.cm.qualifiers.CaseManagementEditor;
 import org.kie.workbench.common.stunner.core.client.session.command.ManagedClientSessionCommands;
 
@@ -30,5 +31,16 @@ public class CaseManagementEditorSessionCommands extends AbstractProcessEditorSe
     @Inject
     public CaseManagementEditorSessionCommands(final ManagedClientSessionCommands commands) {
         super(commands);
+    }
+
+    @Override
+    public void init() {
+        super.init();
+
+        this.getCommands().register(SwitchViewSessionCommand.class);
+    }
+
+    public SwitchViewSessionCommand getSwitchViewSessionCommand() {
+        return this.get(19);
     }
 }

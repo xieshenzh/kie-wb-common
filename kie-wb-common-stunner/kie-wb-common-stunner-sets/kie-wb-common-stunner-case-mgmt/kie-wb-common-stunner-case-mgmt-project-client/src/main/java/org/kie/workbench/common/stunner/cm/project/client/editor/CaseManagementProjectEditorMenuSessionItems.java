@@ -20,18 +20,70 @@ import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Typed;
 import javax.inject.Inject;
 
+import org.gwtbootstrap3.client.ui.Button;
+import org.gwtbootstrap3.client.ui.constants.ButtonSize;
 import org.kie.workbench.common.stunner.bpmn.project.client.editor.AbstractProcessProjectEditorMenuSessionItems;
+import org.kie.workbench.common.stunner.client.widgets.menu.MenuUtils;
 import org.kie.workbench.common.stunner.cm.project.client.resources.i18n.CaseManagementProjectClientConstants;
 import org.kie.workbench.common.stunner.cm.qualifiers.CaseManagementEditor;
+import org.kie.workbench.common.stunner.core.client.service.ClientRuntimeError;
+import org.kie.workbench.common.stunner.core.client.session.command.AbstractClientSessionCommand;
+import org.kie.workbench.common.stunner.core.client.session.command.ClientSessionCommand;
+import org.kie.workbench.common.widgets.client.menu.FileMenuBuilder;
+import org.uberfire.workbench.model.menu.MenuItem;
 
 @Dependent
 @Typed(CaseManagementProjectEditorMenuSessionItems.class)
 public class CaseManagementProjectEditorMenuSessionItems extends AbstractProcessProjectEditorMenuSessionItems<CaseManagementProjectDiagramEditorMenuItemsBuilder> {
 
+    private MenuItem switchItem;
+
     @Inject
     public CaseManagementProjectEditorMenuSessionItems(final CaseManagementProjectDiagramEditorMenuItemsBuilder itemsBuilder,
                                                        final @CaseManagementEditor CaseManagementEditorSessionCommands sessionCommands) {
         super(itemsBuilder, sessionCommands);
+    }
+
+    @Override
+    public void populateMenu(FileMenuBuilder menu) {
+        super.populateMenu(menu);
+
+        final MenuUtils.HasEnabledIsWidget buttonWrapper = MenuUtils.buildHasEnabledWidget(new Button() {{
+            setSize(ButtonSize.SMALL);
+            setText("Switch");
+            addClickHandler(clickEvent ->
+                                    executeSwitchCommand(
+                                            ((CaseManagementEditorSessionCommands) CaseManagementProjectEditorMenuSessionItems.this.getCommands())
+                                                    .getSwitchViewSessionCommand()));
+        }});
+        switchItem = MenuUtils.buildItem(buttonWrapper);
+
+        menu.addNewTopLevelMenu(switchItem);
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        switchItem.setEnabled(enabled);
+    }
+
+    @Override
+    public void destroy() {
+        super.destroy();
+        switchItem = null;
+    }
+
+    private void executeSwitchCommand(final AbstractClientSessionCommand command) {
+        command.execute(new ClientSessionCommand.Callback<ClientRuntimeError>() {
+            @Override
+            public void onSuccess() {
+            }
+
+            @Override
+            public void onError(final ClientRuntimeError error) {
+                CaseManagementProjectEditorMenuSessionItems.this.onError(error.getMessage());
+            }
+        });
     }
 
     @Override
