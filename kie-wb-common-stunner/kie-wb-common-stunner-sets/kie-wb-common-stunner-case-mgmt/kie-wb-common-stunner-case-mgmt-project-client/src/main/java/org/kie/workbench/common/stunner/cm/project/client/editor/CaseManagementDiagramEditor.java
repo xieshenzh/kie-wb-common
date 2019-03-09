@@ -39,6 +39,7 @@ import org.kie.workbench.common.stunner.project.client.editor.event.OnDiagramFoc
 import org.kie.workbench.common.stunner.project.client.editor.event.OnDiagramLoseFocusEvent;
 import org.kie.workbench.common.stunner.project.client.screens.ProjectMessagesListener;
 import org.kie.workbench.common.stunner.project.client.service.ClientProjectDiagramService;
+import org.kie.workbench.common.stunner.project.diagram.ProjectDiagram;
 import org.kie.workbench.common.stunner.project.service.ProjectDiagramResourceService;
 import org.uberfire.backend.vfs.ObservablePath;
 import org.uberfire.client.annotations.WorkbenchEditor;
@@ -47,6 +48,7 @@ import org.uberfire.client.annotations.WorkbenchPartTitle;
 import org.uberfire.client.annotations.WorkbenchPartTitleDecoration;
 import org.uberfire.client.annotations.WorkbenchPartView;
 import org.uberfire.client.mvp.PlaceManager;
+import org.uberfire.client.views.pfly.multipage.PageImpl;
 import org.uberfire.client.workbench.events.ChangeTitleWidgetEvent;
 import org.uberfire.client.workbench.widgets.common.ErrorPopupPresenter;
 import org.uberfire.ext.editor.commons.client.file.popups.SavePopUpPresenter;
@@ -67,6 +69,8 @@ public class CaseManagementDiagramEditor extends AbstractProjectDiagramEditor<Ca
 
     public static final String EDITOR_ID = "CaseManagementDiagramEditor";
 
+    private AbstractProjectDiagramEditor.View processView;
+
     @Inject
     public CaseManagementDiagramEditor(final AbstractProjectDiagramEditor.View view,
                                        final DocumentationView documentationView,
@@ -85,7 +89,8 @@ public class CaseManagementDiagramEditor extends AbstractProjectDiagramEditor<Ca
                                        final DiagramClientErrorHandler diagramClientErrorHandler,
                                        final ClientTranslationService translationService,
                                        final TextEditorView xmlEditorView,
-                                       final Caller<ProjectDiagramResourceService> projectDiagramResourceServiceCaller) {
+                                       final Caller<ProjectDiagramResourceService> projectDiagramResourceServiceCaller,
+                                       final AbstractProjectDiagramEditor.View processView) {
         super(view,
               documentationView,
               placeManager,
@@ -104,6 +109,22 @@ public class CaseManagementDiagramEditor extends AbstractProjectDiagramEditor<Ca
               translationService,
               xmlEditorView,
               projectDiagramResourceServiceCaller);
+
+        this.processView = processView;
+    }
+
+    @Override
+    public void init() {
+        super.init();
+
+        this.processView.init(this);
+    }
+
+    @Override
+    protected void initialiseKieEditorForSession(ProjectDiagram diagram) {
+        super.initialiseKieEditorForSession(diagram);
+
+        this.addPage(new PageImpl(processView, "Switch View"));
     }
 
     @OnStartup

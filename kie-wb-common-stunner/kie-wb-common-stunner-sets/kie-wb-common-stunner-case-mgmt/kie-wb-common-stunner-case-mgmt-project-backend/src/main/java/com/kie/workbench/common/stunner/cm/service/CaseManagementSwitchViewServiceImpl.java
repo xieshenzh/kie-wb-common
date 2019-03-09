@@ -34,10 +34,12 @@ import org.jboss.errai.bus.server.annotations.Service;
 import org.kie.workbench.common.stunner.bpmn.BPMNDefinitionSet;
 import org.kie.workbench.common.stunner.cm.CaseManagementDefinitionSet;
 import org.kie.workbench.common.stunner.cm.project.service.CaseManagementSwitchViewService;
+import org.kie.workbench.common.stunner.core.api.FactoryManager;
 import org.kie.workbench.common.stunner.core.definition.service.DefinitionSetService;
 import org.kie.workbench.common.stunner.core.diagram.AbstractMetadata;
 import org.kie.workbench.common.stunner.core.diagram.Diagram;
 import org.kie.workbench.common.stunner.core.diagram.Metadata;
+import org.kie.workbench.common.stunner.core.factory.diagram.DiagramFactory;
 import org.kie.workbench.common.stunner.core.graph.Graph;
 import org.kie.workbench.common.stunner.core.graph.Node;
 import org.kie.workbench.common.stunner.core.graph.content.definition.DefinitionSet;
@@ -46,6 +48,7 @@ import org.kie.workbench.common.stunner.core.graph.content.definition.Definition
 @Service
 public class CaseManagementSwitchViewServiceImpl implements CaseManagementSwitchViewService {
 
+    private final FactoryManager factoryManager;
     private final Instance<DefinitionSetService> definitionSetServiceInstances;
 
     private Collection<DefinitionSetService> definitionSetServices;
@@ -53,7 +56,9 @@ public class CaseManagementSwitchViewServiceImpl implements CaseManagementSwitch
     private final Map<String, String> definitionTransitionMapping;
 
     @Inject
-    public CaseManagementSwitchViewServiceImpl(final Instance<DefinitionSetService> definitionSetServiceInstances) {
+    public CaseManagementSwitchViewServiceImpl(final FactoryManager factoryManager,
+                                               final Instance<DefinitionSetService> definitionSetServiceInstances) {
+        this.factoryManager = factoryManager;
         this.definitionSetServiceInstances = definitionSetServiceInstances;
 
         this.definitionSetServices = new LinkedList<>();
@@ -91,6 +96,10 @@ public class CaseManagementSwitchViewServiceImpl implements CaseManagementSwitch
 
                     try (final InputStream inputStream = new ByteArrayInputStream(rawData.getBytes())) {
                         final Graph<DefinitionSet, Node> graph = mappedService.getDiagramMarshaller().unmarshall(metadata, inputStream);
+
+                        final DiagramFactory factory = factoryManager.registry().getDiagramFactory(graph.getContent().getDefinition(),
+                                                                                             metadata.getMetadataType());
+                        final Diagram switchedDiagram = factory.build(metadata.getTitle(), metadata, graph);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
