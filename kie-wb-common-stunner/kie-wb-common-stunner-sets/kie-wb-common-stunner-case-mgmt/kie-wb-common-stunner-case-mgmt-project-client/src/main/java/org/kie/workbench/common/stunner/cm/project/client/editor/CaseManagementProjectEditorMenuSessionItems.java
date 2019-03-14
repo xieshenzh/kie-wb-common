@@ -26,22 +26,24 @@ import org.kie.workbench.common.stunner.bpmn.project.client.editor.AbstractProce
 import org.kie.workbench.common.stunner.client.widgets.menu.MenuUtils;
 import org.kie.workbench.common.stunner.cm.project.client.resources.i18n.CaseManagementProjectClientConstants;
 import org.kie.workbench.common.stunner.cm.qualifiers.CaseManagementEditor;
-import org.kie.workbench.common.stunner.core.client.service.ClientRuntimeError;
-import org.kie.workbench.common.stunner.core.client.session.command.AbstractClientSessionCommand;
-import org.kie.workbench.common.stunner.core.client.session.command.ClientSessionCommand;
 import org.kie.workbench.common.widgets.client.menu.FileMenuBuilder;
+import org.uberfire.mvp.Command;
 import org.uberfire.workbench.model.menu.MenuItem;
 
 @Dependent
 @Typed(CaseManagementProjectEditorMenuSessionItems.class)
 public class CaseManagementProjectEditorMenuSessionItems extends AbstractProcessProjectEditorMenuSessionItems<CaseManagementProjectDiagramEditorMenuItemsBuilder> {
 
+    private Command onSwitch;
     private MenuItem switchItem;
 
     @Inject
     public CaseManagementProjectEditorMenuSessionItems(final CaseManagementProjectDiagramEditorMenuItemsBuilder itemsBuilder,
                                                        final @CaseManagementEditor CaseManagementEditorSessionCommands sessionCommands) {
         super(itemsBuilder, sessionCommands);
+
+        this.onSwitch = () -> {
+        };
     }
 
     @Override
@@ -51,14 +53,16 @@ public class CaseManagementProjectEditorMenuSessionItems extends AbstractProcess
         final MenuUtils.HasEnabledIsWidget buttonWrapper = MenuUtils.buildHasEnabledWidget(new Button() {{
             setSize(ButtonSize.SMALL);
             setText("Switch");
-            addClickHandler(clickEvent ->
-                                    executeSwitchCommand(
-                                            ((CaseManagementEditorSessionCommands) CaseManagementProjectEditorMenuSessionItems.this.getCommands())
-                                                    .getSwitchViewSessionCommand()));
+            addClickHandler(clickEvent -> onSwitch.execute());
         }});
         switchItem = MenuUtils.buildItem(buttonWrapper);
 
         menu.addNewTopLevelMenu(switchItem);
+    }
+
+    public CaseManagementProjectEditorMenuSessionItems setOnSwitch(final Command onSwitch) {
+        this.onSwitch = onSwitch;
+        return this;
     }
 
     @Override
@@ -70,20 +74,8 @@ public class CaseManagementProjectEditorMenuSessionItems extends AbstractProcess
     @Override
     public void destroy() {
         super.destroy();
+        onSwitch = null;
         switchItem = null;
-    }
-
-    private void executeSwitchCommand(final AbstractClientSessionCommand command) {
-        command.execute(new ClientSessionCommand.Callback<ClientRuntimeError>() {
-            @Override
-            public void onSuccess() {
-            }
-
-            @Override
-            public void onError(final ClientRuntimeError error) {
-                CaseManagementProjectEditorMenuSessionItems.this.onError(error.getMessage());
-            }
-        });
     }
 
     @Override

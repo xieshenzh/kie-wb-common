@@ -18,21 +18,31 @@ package org.kie.workbench.common.stunner.cm.project.client.editor;
 
 import java.util.function.Consumer;
 
+import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import javax.enterprise.context.Dependent;
 import javax.enterprise.event.Event;
 import javax.inject.Inject;
 
 import com.google.gwt.user.client.ui.IsWidget;
 import org.jboss.errai.common.client.api.Caller;
+import org.jboss.errai.common.client.api.RemoteCallback;
 import org.jboss.errai.ioc.client.api.ManagedInstance;
+import org.kie.workbench.common.stunner.client.widgets.presenters.session.SessionPresenter;
+import org.kie.workbench.common.stunner.client.widgets.presenters.session.impl.AbstractSessionPresenter;
 import org.kie.workbench.common.stunner.client.widgets.presenters.session.impl.SessionEditorPresenter;
 import org.kie.workbench.common.stunner.client.widgets.presenters.session.impl.SessionViewerPresenter;
 import org.kie.workbench.common.stunner.cm.project.client.type.CaseManagementDiagramResourceType;
+import org.kie.workbench.common.stunner.cm.project.service.CaseManagementSwitchViewService;
 import org.kie.workbench.common.stunner.core.client.annotation.DiagramEditor;
 import org.kie.workbench.common.stunner.core.client.error.DiagramClientErrorHandler;
 import org.kie.workbench.common.stunner.core.client.i18n.ClientTranslationService;
+import org.kie.workbench.common.stunner.core.client.service.ClientRuntimeError;
 import org.kie.workbench.common.stunner.core.client.session.impl.EditorSession;
 import org.kie.workbench.common.stunner.core.client.session.impl.ViewerSession;
+import org.kie.workbench.common.stunner.core.diagram.Diagram;
 import org.kie.workbench.common.stunner.core.documentation.DocumentationView;
 import org.kie.workbench.common.stunner.project.client.editor.AbstractProjectDiagramEditor;
 import org.kie.workbench.common.stunner.project.client.editor.event.OnDiagramFocusEvent;
@@ -67,9 +77,15 @@ import org.uberfire.workbench.model.menu.Menus;
 @WorkbenchEditor(identifier = CaseManagementDiagramEditor.EDITOR_ID, supportedTypes = {CaseManagementDiagramResourceType.class})
 public class CaseManagementDiagramEditor extends AbstractProjectDiagramEditor<CaseManagementDiagramResourceType> {
 
+    private static final Logger LOGGER = Logger.getLogger(CaseManagementDiagramEditor.class.getName());
+
     public static final String EDITOR_ID = "CaseManagementDiagramEditor";
 
     private AbstractProjectDiagramEditor.View processView;
+
+    private Optional<SessionEditorPresenter<EditorSession>> processEditorSessionPresenter = Optional.empty();
+
+    private Caller<CaseManagementSwitchViewService> caseManagementSwitchViewService;
 
     @Inject
     public CaseManagementDiagramEditor(final AbstractProjectDiagramEditor.View view,
@@ -90,7 +106,8 @@ public class CaseManagementDiagramEditor extends AbstractProjectDiagramEditor<Ca
                                        final ClientTranslationService translationService,
                                        final TextEditorView xmlEditorView,
                                        final Caller<ProjectDiagramResourceService> projectDiagramResourceServiceCaller,
-                                       final AbstractProjectDiagramEditor.View processView) {
+                                       final AbstractProjectDiagramEditor.View processView,
+                                       final Caller<CaseManagementSwitchViewService> caseManagementSwitchViewService) {
         super(view,
               documentationView,
               placeManager,
@@ -111,13 +128,17 @@ public class CaseManagementDiagramEditor extends AbstractProjectDiagramEditor<Ca
               projectDiagramResourceServiceCaller);
 
         this.processView = processView;
+        this.caseManagementSwitchViewService = caseManagementSwitchViewService;
     }
 
     @Override
     public void init() {
         super.init();
 
+        this.getCaseManagementSessionItems().setOnSwitch(this::onSwitch);
         this.processView.init(this);
+
+        LOGGER.log(Level.SEVERE, "case diagram editor id: " + System.identityHashCode(this));
     }
 
     @Override
@@ -190,5 +211,81 @@ public class CaseManagementDiagramEditor extends AbstractProjectDiagramEditor<Ca
     protected SessionEditorPresenter<EditorSession> newSessionEditorPresenter() {
         return (SessionEditorPresenter<EditorSession>) super.newSessionEditorPresenter()
                 .displayNotifications(type -> false);
+    }
+
+    public SessionEditorPresenter<EditorSession> newProcessSessionEditorPresenter() {
+        final SessionEditorPresenter<EditorSession> presenter =
+                (SessionEditorPresenter<EditorSession>) editorSessionPresenterInstances.get()
+                        .withToolbar(false)
+                        .withPalette(true)
+                        .displayNotifications(type -> true);
+        processView.setWidget(presenter.getView());
+        return presenter;
+    }
+
+    public void openProcessSession(final ProjectDiagram diagram) {
+        processEditorSessionPresenter.ifPresent(AbstractSessionPresenter::destroy);
+        processEditorSessionPresenter = Optional.of(newProcessSessionEditorPresenter());
+        processEditorSessionPresenter.get()
+                .open(diagram,
+                      new SessionPresenter.SessionPresenterCallback<Diagram>() {
+                          @Override
+                          public void afterSessionOpened() {
+
+                          }
+
+                          @Override
+                          public void afterCanvasInitialized() {
+
+                          }
+
+                          @Override
+                          public void onSuccess() {
+//                              CaseManagementDiagramEditor.this.getMenuSessionItems()
+//                                      .bind(processEditorSessionPresenter.map(AbstractSessionPresenter::getInstance).orElse(null));
+                          }
+
+                          @Override
+                          public void onError(final ClientRuntimeError error) {
+                              onLoadError(error);
+                          }
+                      });
+    }
+
+    public void reopenSession(final ProjectDiagram diagram) {
+        LOGGER.log(Level.SEVERE, "case diagram editor id: " + System.identityHashCode(this));
+
+        if (this.getSessionPresenter() != null) {
+            this.getSessionPresenter().destroy();
+        }
+        this.openSession(diagram);
+    }
+
+    @Override
+    protected void destroySession() {
+        processEditorSessionPresenter.ifPresent(session -> {
+            session.destroy();
+            processEditorSessionPresenter = Optional.empty();
+        });
+
+        super.destroySession();
+    }
+
+    private CaseManagementProjectEditorMenuSessionItems getCaseManagementSessionItems() {
+        return (CaseManagementProjectEditorMenuSessionItems) getMenuSessionItems();
+    }
+
+    protected void onSwitch() {
+        try {
+            caseManagementSwitchViewService.call(new RemoteCallback<ProjectDiagram>() {
+                @Override
+                public void callback(ProjectDiagram diagram) {
+                    CaseManagementDiagramEditor.this.processView.showLoading();
+                    CaseManagementDiagramEditor.this.openProcessSession(diagram);
+                }
+            }).switchView(processEditorSessionPresenter.map(p -> p.getHandler().getDiagram()).orElse(this.getCanvasHandler().getDiagram()));
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
+        }
     }
 }

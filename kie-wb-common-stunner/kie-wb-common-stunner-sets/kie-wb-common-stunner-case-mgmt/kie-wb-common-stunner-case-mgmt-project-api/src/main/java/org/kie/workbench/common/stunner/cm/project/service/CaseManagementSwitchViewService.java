@@ -18,9 +18,10 @@ package org.kie.workbench.common.stunner.cm.project.service;
 
 import org.jboss.errai.bus.server.annotations.Remote;
 import org.kie.workbench.common.stunner.core.diagram.Diagram;
+import org.kie.workbench.common.stunner.project.diagram.ProjectDiagram;
 
 @Remote
 public interface CaseManagementSwitchViewService {
 
-    void switchView(Diagram diagram);
+    ProjectDiagram switchView(Diagram diagram);
 }

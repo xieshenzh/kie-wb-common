@@ -43,6 +43,7 @@ import org.kie.workbench.common.stunner.core.factory.diagram.DiagramFactory;
 import org.kie.workbench.common.stunner.core.graph.Graph;
 import org.kie.workbench.common.stunner.core.graph.Node;
 import org.kie.workbench.common.stunner.core.graph.content.definition.DefinitionSet;
+import org.kie.workbench.common.stunner.project.diagram.ProjectDiagram;
 
 @ApplicationScoped
 @Service
@@ -54,6 +55,7 @@ public class CaseManagementSwitchViewServiceImpl implements CaseManagementSwitch
     private Collection<DefinitionSetService> definitionSetServices;
 
     private final Map<String, String> definitionTransitionMapping;
+    private final Map<String, String> shapeTransitionMapping;
 
     @Inject
     public CaseManagementSwitchViewServiceImpl(final FactoryManager factoryManager,
@@ -63,6 +65,7 @@ public class CaseManagementSwitchViewServiceImpl implements CaseManagementSwitch
 
         this.definitionSetServices = new LinkedList<>();
         this.definitionTransitionMapping = new HashMap<>();
+        this.shapeTransitionMapping = new HashMap<>();
     }
 
     @PostConstruct
@@ -71,18 +74,21 @@ public class CaseManagementSwitchViewServiceImpl implements CaseManagementSwitch
 
         this.definitionTransitionMapping.put(CaseManagementDefinitionSet.class.getName(), BPMNDefinitionSet.class.getName());
         this.definitionTransitionMapping.put(BPMNDefinitionSet.class.getName(), CaseManagementDefinitionSet.class.getName());
+
+        this.shapeTransitionMapping.put(CaseManagementDefinitionSet.class.getName(), "org.kie.workbench.common.stunner.cm.client.CaseManagementShapeSet");
+        this.shapeTransitionMapping.put(BPMNDefinitionSet.class.getName(), "org.kie.workbench.common.stunner.bpmn.client.BPMNShapeSet");
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public void switchView(Diagram diagram) {
+    public ProjectDiagram switchView(Diagram diagram) {
         final Metadata metadata = diagram.getMetadata();
         final String defSetId = metadata.getDefinitionSetId();
 
         final Optional<DefinitionSetService> definitionSetServiceOptional =
                 definitionSetServices.stream().filter(s -> s.accepts(defSetId)).findAny();
 
-        definitionSetServiceOptional.ifPresent(service -> {
+        return (ProjectDiagram) definitionSetServiceOptional.map(service -> {
             try {
                 final String rawData = service.getDiagramMarshaller().marshall(diagram);
 
@@ -91,22 +97,30 @@ public class CaseManagementSwitchViewServiceImpl implements CaseManagementSwitch
                 final Optional<DefinitionSetService> mappedDefinitionSetServiceOptional = definitionSetServices.stream()
                         .filter(s -> s.accepts(mappedDefSetId)).findAny();
 
-                mappedDefinitionSetServiceOptional.ifPresent(mappedService -> {
+                return mappedDefinitionSetServiceOptional.map(mappedService -> {
                     ((AbstractMetadata) metadata).setDefinitionSetId(mappedDefSetId);
 
                     try (final InputStream inputStream = new ByteArrayInputStream(rawData.getBytes())) {
                         final Graph<DefinitionSet, Node> graph = mappedService.getDiagramMarshaller().unmarshall(metadata, inputStream);
 
                         final DiagramFactory factory = factoryManager.registry().getDiagramFactory(graph.getContent().getDefinition(),
-                                                                                             metadata.getMetadataType());
-                        final Diagram switchedDiagram = factory.build(metadata.getTitle(), metadata, graph);
+                                                                                                   metadata.getMetadataType());
+                        final Diagram mappedDiagram = factory.build(metadata.getTitle(), metadata, graph);
+
+                        mappedDiagram.getMetadata().setShapeSetId(this.shapeTransitionMapping.get(mappedDefSetId));
+
+                        return mappedDiagram;
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                });
+
+                    return null;
+                }).orElse(null);
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        });
+
+            return null;
+        }).orElse(null);
     }
 }
