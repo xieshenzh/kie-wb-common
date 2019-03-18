@@ -23,5 +23,5 @@ import org.kie.workbench.common.stunner.project.diagram.ProjectDiagram;
 @Remote
 public interface CaseManagementSwitchViewService {
 
-    ProjectDiagram switchView(Diagram diagram);
+    ProjectDiagram switchView(final Diagram diagram, final String mappedDefSetId, final String mappedShapeSetId);
 }

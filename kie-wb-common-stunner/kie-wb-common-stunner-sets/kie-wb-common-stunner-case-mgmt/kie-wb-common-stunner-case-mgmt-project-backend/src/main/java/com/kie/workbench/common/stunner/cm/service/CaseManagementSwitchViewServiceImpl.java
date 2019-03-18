@@ -20,9 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.Optional;
 
 import javax.annotation.PostConstruct;
@@ -31,8 +29,6 @@ import javax.enterprise.inject.Instance;
 import javax.inject.Inject;
 
 import org.jboss.errai.bus.server.annotations.Service;
-import org.kie.workbench.common.stunner.bpmn.BPMNDefinitionSet;
-import org.kie.workbench.common.stunner.cm.CaseManagementDefinitionSet;
 import org.kie.workbench.common.stunner.cm.project.service.CaseManagementSwitchViewService;
 import org.kie.workbench.common.stunner.core.api.FactoryManager;
 import org.kie.workbench.common.stunner.core.definition.service.DefinitionSetService;
@@ -54,9 +50,6 @@ public class CaseManagementSwitchViewServiceImpl implements CaseManagementSwitch
 
     private Collection<DefinitionSetService> definitionSetServices;
 
-    private final Map<String, String> definitionTransitionMapping;
-    private final Map<String, String> shapeTransitionMapping;
-
     @Inject
     public CaseManagementSwitchViewServiceImpl(final FactoryManager factoryManager,
                                                final Instance<DefinitionSetService> definitionSetServiceInstances) {
@@ -64,24 +57,16 @@ public class CaseManagementSwitchViewServiceImpl implements CaseManagementSwitch
         this.definitionSetServiceInstances = definitionSetServiceInstances;
 
         this.definitionSetServices = new LinkedList<>();
-        this.definitionTransitionMapping = new HashMap<>();
-        this.shapeTransitionMapping = new HashMap<>();
     }
 
     @PostConstruct
     public void init() {
         definitionSetServiceInstances.forEach(i -> definitionSetServices.add(i));
-
-        this.definitionTransitionMapping.put(CaseManagementDefinitionSet.class.getName(), BPMNDefinitionSet.class.getName());
-        this.definitionTransitionMapping.put(BPMNDefinitionSet.class.getName(), CaseManagementDefinitionSet.class.getName());
-
-        this.shapeTransitionMapping.put(CaseManagementDefinitionSet.class.getName(), "org.kie.workbench.common.stunner.cm.client.CaseManagementShapeSet");
-        this.shapeTransitionMapping.put(BPMNDefinitionSet.class.getName(), "org.kie.workbench.common.stunner.bpmn.client.BPMNShapeSet");
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public ProjectDiagram switchView(Diagram diagram) {
+    public ProjectDiagram switchView(final Diagram diagram, final String mappedDefSetId, final String mappedShapeSetId) {
         final Metadata metadata = diagram.getMetadata();
         final String defSetId = metadata.getDefinitionSetId();
 
@@ -91,8 +76,6 @@ public class CaseManagementSwitchViewServiceImpl implements CaseManagementSwitch
         return (ProjectDiagram) definitionSetServiceOptional.map(service -> {
             try {
                 final String rawData = service.getDiagramMarshaller().marshall(diagram);
-
-                final String mappedDefSetId = definitionTransitionMapping.get(defSetId);
 
                 final Optional<DefinitionSetService> mappedDefinitionSetServiceOptional = definitionSetServices.stream()
                         .filter(s -> s.accepts(mappedDefSetId)).findAny();
@@ -107,7 +90,7 @@ public class CaseManagementSwitchViewServiceImpl implements CaseManagementSwitch
                                                                                                    metadata.getMetadataType());
                         final Diagram mappedDiagram = factory.build(metadata.getTitle(), metadata, graph);
 
-                        mappedDiagram.getMetadata().setShapeSetId(this.shapeTransitionMapping.get(mappedDefSetId));
+                        mappedDiagram.getMetadata().setShapeSetId(mappedShapeSetId);
 
                         return mappedDiagram;
                     } catch (IOException e) {

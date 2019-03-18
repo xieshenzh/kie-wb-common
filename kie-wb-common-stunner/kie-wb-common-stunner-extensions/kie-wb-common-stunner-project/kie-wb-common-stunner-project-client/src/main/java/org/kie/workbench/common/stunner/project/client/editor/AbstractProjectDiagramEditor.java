@@ -112,7 +112,7 @@ public abstract class AbstractProjectDiagramEditor<R extends ClientResourceType>
     private Event<ChangeTitleWidgetEvent> changeTitleNotificationEvent;
     private R resourceType;
     protected ClientProjectDiagramService projectDiagramServices;
-    protected final ManagedInstance<SessionEditorPresenter<EditorSession>> editorSessionPresenterInstances;
+    private final ManagedInstance<SessionEditorPresenter<EditorSession>> editorSessionPresenterInstances;
     private final ManagedInstance<SessionViewerPresenter<ViewerSession>> viewerSessionPresenterInstances;
     private AbstractProjectEditorMenuSessionItems<?> menuSessionItems;
     private ProjectMessagesListener projectMessagesListener;
@@ -800,5 +800,13 @@ public abstract class AbstractProjectDiagramEditor<R extends ClientResourceType>
                                   IsWidget {
 
         void setWidget(IsWidget widget);
+    }
+
+    protected ManagedInstance<SessionEditorPresenter<EditorSession>> getEditorSessionPresenterInstances() {
+        return editorSessionPresenterInstances;
+    }
+
+    protected Optional<SessionEditorPresenter<EditorSession>> getEditorSessionPresenter() {
+        return editorSessionPresenter;
     }
 }
