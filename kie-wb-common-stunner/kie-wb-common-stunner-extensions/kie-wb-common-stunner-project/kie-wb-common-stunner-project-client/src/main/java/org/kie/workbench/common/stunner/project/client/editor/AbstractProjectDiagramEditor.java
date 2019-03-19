@@ -648,7 +648,7 @@ public abstract class AbstractProjectDiagramEditor<R extends ClientResourceType>
                          resourceType.getShortName());
     }
 
-    private ClientSession getSession() {
+    protected ClientSession getSession() {
         return null != getSessionPresenter() ? getSessionPresenter().getInstance() : null;
     }
 
