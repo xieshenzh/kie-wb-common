@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Red Hat, Inc. and/or its affiliates.
+ * Copyright 2019 Red Hat, Inc. and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,34 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.stunner.cm.backend.converters.fromstunner.properties;
+package org.kie.workbench.common.stunner.bpmn.backend.converters.fromstunner.properties;
 
 import org.junit.Test;
 import org.kie.workbench.common.stunner.bpmn.backend.converters.customproperties.CustomElement;
-import org.kie.workbench.common.stunner.bpmn.backend.converters.fromstunner.properties.FlatVariableScope;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.kie.workbench.common.stunner.bpmn.backend.converters.fromstunner.Factories.bpmn2;
 
-public class CaseManagementAdHocSubProcessPropertyWriterTest {
+public class CallActivityPropertyWriterTest {
 
-    private CaseManagementAdHocSubProcessPropertyWriter tested = new CaseManagementAdHocSubProcessPropertyWriter(bpmn2.createAdHocSubProcess(),
-                                                                                                                 new FlatVariableScope());
+    private CallActivityPropertyWriter tested =
+            new CallActivityPropertyWriter(bpmn2.createCallActivity(),
+                                           new FlatVariableScope());
+
+    @Test
+    public void testSetCase_true() throws Exception {
+        tested.setCase(Boolean.TRUE);
+
+        assertTrue(CustomElement.isCase.of(tested.getFlowElement()).get());
+    }
+
+    @Test
+    public void testSetCase_false() throws Exception {
+        tested.setCase(Boolean.FALSE);
+
+        assertFalse(CustomElement.isCase.of(tested.getFlowElement()).get());
+    }
 
     @Test
     public void testSetAdHocAutostart_true() throws Exception {

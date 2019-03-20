@@ -34,7 +34,6 @@ import org.jboss.errai.ioc.client.api.ManagedInstance;
 import org.kie.workbench.common.stunner.bpmn.BPMNDefinitionSet;
 import org.kie.workbench.common.stunner.bpmn.client.BPMNShapeSet;
 import org.kie.workbench.common.stunner.client.widgets.presenters.session.SessionPresenter;
-import org.kie.workbench.common.stunner.client.widgets.presenters.session.impl.AbstractSessionPresenter;
 import org.kie.workbench.common.stunner.client.widgets.presenters.session.impl.SessionEditorPresenter;
 import org.kie.workbench.common.stunner.client.widgets.presenters.session.impl.SessionViewerPresenter;
 import org.kie.workbench.common.stunner.cm.CaseManagementDefinitionSet;
@@ -274,30 +273,31 @@ public class CaseManagementDiagramEditor extends AbstractProjectDiagramEditor<Ca
 
     public void reopenSession(final ProjectDiagram diagram,
                               final Optional<SessionEditorPresenter<EditorSession>> sessionEditorPresenter) {
-        sessionEditorPresenter.get()
-                .open(diagram,
-                      new SessionPresenter.SessionPresenterCallback<Diagram>() {
-                          @Override
-                          public void afterSessionOpened() {
+        sessionEditorPresenter.ifPresent(
+                p -> p.open(diagram,
+                            new SessionPresenter.SessionPresenterCallback<Diagram>() {
+                                @Override
+                                public void afterSessionOpened() {
 
-                          }
+                                }
 
-                          @Override
-                          public void afterCanvasInitialized() {
+                                @Override
+                                public void afterCanvasInitialized() {
 
-                          }
+                                }
 
-                          @Override
-                          public void onSuccess() {
-                              CaseManagementDiagramEditor.this.getMenuSessionItems()
-                                      .bind(CaseManagementDiagramEditor.this.getSession());
-                          }
+                                @Override
+                                public void onSuccess() {
+                                    CaseManagementDiagramEditor.this.getMenuSessionItems()
+                                            .bind(CaseManagementDiagramEditor.this.getSession());
+                                }
 
-                          @Override
-                          public void onError(final ClientRuntimeError error) {
-                              onLoadError(error);
-                          }
-                      });
+                                @Override
+                                public void onError(final ClientRuntimeError error) {
+                                    onLoadError(error);
+                                }
+                            })
+        );
     }
 
     @Override
@@ -332,14 +332,12 @@ public class CaseManagementDiagramEditor extends AbstractProjectDiagramEditor<Ca
                 @Override
                 public void callback(ProjectDiagram diagram) {
                     CaseManagementDiagramEditor.this.reopenSession(diagram, sessionEditorPresenter);
+
+                    CaseManagementDiagramEditor.this.processView.hideBusyIndicator();
                 }
             }).switchView(diagram, defSetId, shapeDefId);
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
-        } finally {
-            this.processView.hideBusyIndicator();
         }
-
-        processEditorSessionPresenter.ifPresent(AbstractSessionPresenter::focus);
     }
 }

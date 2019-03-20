@@ -64,7 +64,6 @@ import org.kie.workbench.common.stunner.bpmn.definition.property.task.Subject;
 import org.kie.workbench.common.stunner.bpmn.definition.property.task.TaskName;
 import org.kie.workbench.common.stunner.bpmn.definition.property.task.WaitForCompletion;
 import org.kie.workbench.common.stunner.cm.CaseManagementDefinitionSet;
-import org.kie.workbench.common.stunner.cm.backend.converters.fromstunner.properties.CaseManagementPropertyWriterFactory;
 import org.kie.workbench.common.stunner.cm.definition.AdHocSubprocess;
 import org.kie.workbench.common.stunner.cm.definition.CaseManagementDiagram;
 import org.kie.workbench.common.stunner.cm.definition.CaseReusableSubprocess;
@@ -1495,12 +1494,6 @@ public class CaseManagementDirectDiagramMarshallerTest {
     }
 
     @Test
-    public void testCreateFromStunnerConverterFactory() throws Exception {
-        assertTrue(org.kie.workbench.common.stunner.cm.backend.converters.fromstunner.CaseManagementConverterFactory.class.isInstance(
-                tested.createFromStunnerConverterFactory(new GraphImpl("x", new GraphNodeStoreImpl()), new CaseManagementPropertyWriterFactory())));
-    }
-
-    @Test
     public void testCreateToStunnerConverterFactory() throws Exception {
         Definitions definitions = bpmn2.createDefinitions();
         definitions.getRootElements().add(bpmn2.createProcess());
@@ -1516,11 +1509,6 @@ public class CaseManagementDirectDiagramMarshallerTest {
 
         assertTrue(org.kie.workbench.common.stunner.cm.backend.converters.tostunner.CaseManagementConverterFactory.class.isInstance(
                 tested.createToStunnerConverterFactory(definitionResolver, typedFactoryManager)));
-    }
-
-    @Test
-    public void testCreatePropertyWriterFactory() throws Exception {
-        assertTrue(CaseManagementPropertyWriterFactory.class.isInstance(tested.createPropertyWriterFactory()));
     }
 
     @Test

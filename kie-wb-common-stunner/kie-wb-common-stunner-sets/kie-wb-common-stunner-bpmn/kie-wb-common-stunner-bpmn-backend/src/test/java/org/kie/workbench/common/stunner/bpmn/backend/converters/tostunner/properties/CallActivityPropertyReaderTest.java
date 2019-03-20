@@ -1,5 +1,5 @@
 /*
- * Copyright 2018 Red Hat, Inc. and/or its affiliates.
+ * Copyright 2019 Red Hat, Inc. and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.kie.workbench.common.stunner.cm.backend.converters.tostunner.properties;
+package org.kie.workbench.common.stunner.bpmn.backend.converters.tostunner.properties;
 
 import java.util.Collections;
 import java.util.UUID;
@@ -26,18 +26,17 @@ import org.junit.Before;
 import org.junit.Test;
 import org.kie.workbench.common.stunner.bpmn.backend.converters.customproperties.CustomElement;
 import org.kie.workbench.common.stunner.bpmn.backend.converters.tostunner.DefinitionResolver;
-import org.kie.workbench.common.stunner.cm.backend.converters.customproperties.CaseManagementCustomElement;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.kie.workbench.common.stunner.bpmn.backend.converters.fromstunner.Factories.bpmn2;
 import static org.kie.workbench.common.stunner.bpmn.backend.converters.fromstunner.Factories.di;
 
-public class CaseManagementActivityPropertyReaderTest {
+public class CallActivityPropertyReaderTest {
 
     private DefinitionResolver definitionResolver;
 
-    private CaseManagementActivityPropertyReader tested;
+    private CallActivityPropertyReader tested;
 
     @Before
     public void setUp() throws Exception {
@@ -56,11 +55,11 @@ public class CaseManagementActivityPropertyReaderTest {
 
         CallActivity callActivity = bpmn2.createCallActivity();
         callActivity.setId(id);
-        CaseManagementCustomElement.isCase.of(callActivity).set(Boolean.TRUE);
+        CustomElement.isCase.of(callActivity).set(Boolean.TRUE);
 
-        tested = new CaseManagementActivityPropertyReader(callActivity,
-                                                          definitionResolver.getDiagram(),
-                                                          definitionResolver);
+        tested = new CallActivityPropertyReader(callActivity,
+                                                definitionResolver.getDiagram(),
+                                                definitionResolver);
 
         assertTrue(tested.isCase());
     }
@@ -71,11 +70,11 @@ public class CaseManagementActivityPropertyReaderTest {
 
         CallActivity callActivity = bpmn2.createCallActivity();
         callActivity.setId(id);
-        CaseManagementCustomElement.isCase.of(callActivity).set(Boolean.FALSE);
+        CustomElement.isCase.of(callActivity).set(Boolean.FALSE);
 
-        tested = new CaseManagementActivityPropertyReader(callActivity,
-                                                          definitionResolver.getDiagram(),
-                                                          definitionResolver);
+        tested = new CallActivityPropertyReader(callActivity,
+                                                definitionResolver.getDiagram(),
+                                                definitionResolver);
 
         assertFalse(tested.isCase());
     }
@@ -88,9 +87,9 @@ public class CaseManagementActivityPropertyReaderTest {
         callActivity.setId(id);
         CustomElement.autoStart.of(callActivity).set(Boolean.TRUE);
 
-        tested = new CaseManagementActivityPropertyReader(callActivity,
-                                                          definitionResolver.getDiagram(),
-                                                          definitionResolver);
+        tested = new CallActivityPropertyReader(callActivity,
+                                                definitionResolver.getDiagram(),
+                                                definitionResolver);
 
         assertTrue(tested.isAdHocAutostart());
     }
@@ -103,9 +102,9 @@ public class CaseManagementActivityPropertyReaderTest {
         callActivity.setId(id);
         CustomElement.autoStart.of(callActivity).set(Boolean.FALSE);
 
-        tested = new CaseManagementActivityPropertyReader(callActivity,
-                                                          definitionResolver.getDiagram(),
-                                                          definitionResolver);
+        tested = new CallActivityPropertyReader(callActivity,
+                                                definitionResolver.getDiagram(),
+                                                definitionResolver);
 
         assertFalse(tested.isAdHocAutostart());
     }

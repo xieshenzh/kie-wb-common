@@ -32,15 +32,13 @@ import javax.inject.Inject;
 
 import org.kie.workbench.common.stunner.bpmn.backend.BaseDirectDiagramMarshaller;
 import org.kie.workbench.common.stunner.bpmn.backend.converters.TypedFactoryManager;
-import org.kie.workbench.common.stunner.bpmn.backend.converters.fromstunner.DefinitionsBuildingContext;
-import org.kie.workbench.common.stunner.bpmn.backend.converters.fromstunner.properties.PropertyWriterFactory;
 import org.kie.workbench.common.stunner.bpmn.backend.converters.tostunner.DefinitionResolver;
 import org.kie.workbench.common.stunner.bpmn.backend.workitem.service.WorkItemDefinitionBackendService;
 import org.kie.workbench.common.stunner.bpmn.definition.EndNoneEvent;
 import org.kie.workbench.common.stunner.bpmn.definition.SequenceFlow;
 import org.kie.workbench.common.stunner.bpmn.definition.StartNoneEvent;
 import org.kie.workbench.common.stunner.cm.CaseManagementDefinitionSet;
-import org.kie.workbench.common.stunner.cm.backend.converters.fromstunner.properties.CaseManagementPropertyWriterFactory;
+import org.kie.workbench.common.stunner.cm.backend.converters.tostunner.CaseManagementConverterFactory;
 import org.kie.workbench.common.stunner.cm.definition.AdHocSubprocess;
 import org.kie.workbench.common.stunner.cm.definition.CaseManagementDiagram;
 import org.kie.workbench.common.stunner.cm.qualifiers.CaseManagementEditor;
@@ -320,29 +318,18 @@ public class CaseManagementDirectDiagramMarshaller extends BaseDirectDiagramMars
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    protected org.kie.workbench.common.stunner.cm.backend.converters.fromstunner.CaseManagementConverterFactory createFromStunnerConverterFactory(
-            final Graph graph,
-            final PropertyWriterFactory propertyWriterFactory) {
-        return new org.kie.workbench.common.stunner.cm.backend.converters.fromstunner.CaseManagementConverterFactory(
-                new DefinitionsBuildingContext(graph, CaseManagementDiagram.class), propertyWriterFactory);
-    }
-
-    @Override
-    protected org.kie.workbench.common.stunner.cm.backend.converters.tostunner.CaseManagementConverterFactory createToStunnerConverterFactory(
-            final DefinitionResolver definitionResolver,
-            final TypedFactoryManager typedFactoryManager) {
-        return new org.kie.workbench.common.stunner.cm.backend.converters.tostunner.CaseManagementConverterFactory(
-                definitionResolver, typedFactoryManager);
-    }
-
-    @Override
-    protected CaseManagementPropertyWriterFactory createPropertyWriterFactory() {
-        return new CaseManagementPropertyWriterFactory();
+    protected CaseManagementConverterFactory createToStunnerConverterFactory(final DefinitionResolver definitionResolver,
+                                                                             final TypedFactoryManager typedFactoryManager) {
+        return new CaseManagementConverterFactory(definitionResolver, typedFactoryManager);
     }
 
     @Override
     protected Class<CaseManagementDefinitionSet> getDefinitionSetClass() {
         return CaseManagementDefinitionSet.class;
+    }
+
+    @Override
+    protected Class<?> getDiagramClass() {
+        return CaseManagementDiagram.class;
     }
 }

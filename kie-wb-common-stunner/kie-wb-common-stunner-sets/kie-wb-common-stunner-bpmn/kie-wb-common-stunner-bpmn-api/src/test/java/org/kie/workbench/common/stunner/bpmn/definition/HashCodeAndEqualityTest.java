@@ -1268,10 +1268,12 @@ public class HashCodeAndEqualityTest {
 
                 .addTrueCase(new AdHocSubprocessTaskExecutionSet(new AdHocCompletionCondition(),
                                                                  new AdHocOrdering(),
+                                                                 new AdHocAutostart(),
                                                                  new OnEntryAction(),
                                                                  new OnExitAction()),
                              new AdHocSubprocessTaskExecutionSet(new AdHocCompletionCondition(),
                                                                  new AdHocOrdering(),
+                                                                 new AdHocAutostart(),
                                                                  new OnEntryAction(),
                                                                  new OnExitAction()))
                 .test();
