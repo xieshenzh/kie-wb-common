@@ -111,9 +111,6 @@ public abstract class AbstractProjectDiagramEditor<R extends ClientResourceType>
     private ErrorPopupPresenter errorPopupPresenter;
     private Event<ChangeTitleWidgetEvent> changeTitleNotificationEvent;
     private R resourceType;
-    protected ClientProjectDiagramService projectDiagramServices;
-    private final ManagedInstance<SessionEditorPresenter<EditorSession>> editorSessionPresenterInstances;
-    private final ManagedInstance<SessionViewerPresenter<ViewerSession>> viewerSessionPresenterInstances;
     private AbstractProjectEditorMenuSessionItems<?> menuSessionItems;
     private ProjectMessagesListener projectMessagesListener;
     private Event<OnDiagramFocusEvent> onDiagramFocusEvent;
