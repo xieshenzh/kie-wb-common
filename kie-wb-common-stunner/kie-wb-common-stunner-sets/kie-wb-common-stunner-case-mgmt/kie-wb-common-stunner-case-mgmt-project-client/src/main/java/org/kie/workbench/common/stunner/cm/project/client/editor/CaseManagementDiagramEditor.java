@@ -20,7 +20,6 @@ import java.util.function.Consumer;
 
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.enterprise.context.Dependent;
@@ -325,19 +324,16 @@ public class CaseManagementDiagramEditor extends AbstractProjectDiagramEditor<Ca
 
     protected void onSwitch(final Diagram diagram, final String defSetId, final String shapeDefId,
                             final Optional<SessionEditorPresenter<EditorSession>> sessionEditorPresenter) {
-        try {
-            this.processView.showLoading();
+        this.processView.showLoading();
 
-            caseManagementSwitchViewService.call(new RemoteCallback<ProjectDiagram>() {
-                @Override
-                public void callback(ProjectDiagram diagram) {
-                    CaseManagementDiagramEditor.this.reopenSession(diagram, sessionEditorPresenter);
-
+        caseManagementSwitchViewService.call(new RemoteCallback<Optional<ProjectDiagram>>() {
+            @Override
+            public void callback(Optional<ProjectDiagram> diagram) {
+                diagram.ifPresent(d -> {
+                    CaseManagementDiagramEditor.this.reopenSession(d, sessionEditorPresenter);
                     CaseManagementDiagramEditor.this.processView.hideBusyIndicator();
-                }
-            }).switchView(diagram, defSetId, shapeDefId);
-        } catch (Exception ex) {
-            LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
-        }
+                });
+            }
+        }).switchView(diagram, defSetId, shapeDefId);
     }
 }

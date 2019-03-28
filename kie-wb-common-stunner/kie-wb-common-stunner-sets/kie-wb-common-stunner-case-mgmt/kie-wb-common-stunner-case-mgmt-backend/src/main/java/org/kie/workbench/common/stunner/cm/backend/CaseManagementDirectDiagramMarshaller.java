@@ -21,8 +21,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.OptionalDouble;
 import java.util.stream.Collectors;
-import java.util.stream.DoubleStream;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -117,10 +117,9 @@ public class CaseManagementDirectDiagramMarshaller extends BaseDirectDiagramMars
             diagram.getGraph().addNode(startNoneEvent);
             createChild(UUID.uuid(), rootNode, startNoneEvent, 0);
 
-            final double endNodeEventX = (ORIGIN_X + EVENT_WIDTH) + GAP + stageWidth;
             final Node endNoneEvent = typedFactoryManager.newNode(UUID.uuid(), EndNoneEvent.class);
             ((View) endNoneEvent.getContent()).setBounds(
-                    Bounds.create(endNodeEventX, ORIGIN_Y, endNodeEventX + EVENT_WIDTH, ORIGIN_Y + EVENT_HEIGHT));
+                    Bounds.create(stageWidth, ORIGIN_Y, stageWidth + EVENT_WIDTH, ORIGIN_Y + EVENT_HEIGHT));
             diagram.getGraph().addNode(endNoneEvent);
             createChild(UUID.uuid(), rootNode, endNoneEvent, rootNode.getOutEdges().size());
 
@@ -172,27 +171,40 @@ public class CaseManagementDirectDiagramMarshaller extends BaseDirectDiagramMars
             return 0.0;
         }
 
-        // calculate stage width
-        final double stageWidth = stages.stream().mapToDouble(stage -> stage.getOutEdges().stream().mapToDouble(
-                edge -> edge.getTargetNode().getContent().getBounds().getWidth() + STAGE_GAP * 2)
-                .max().orElse(stage.getContent().getBounds().getWidth())).max().getAsDouble();
+        // calculate stage widths
+        final List<Double> stageWidths = stages.stream().map(
+                stage -> {
+                    final OptionalDouble maxWidth = stage.getOutEdges().stream().mapToDouble(
+                            edge -> edge.getTargetNode().getContent().getBounds().getWidth() + STAGE_GAP * 2).max();
+                    if (maxWidth.isPresent()) {
+                        final double cWidth = maxWidth.getAsDouble();
+                        final double sWidth = stage.getContent().getBounds().getWidth();
+                        return Double.compare(cWidth, sWidth) > 0 ? cWidth : sWidth;
+                    }
+                    return stage.getContent().getBounds().getWidth();
+                }).collect(Collectors.toList());
 
         // calculate stage height
-        final double stageHeight = stages.stream().mapToDouble(
+        final List<Double> stageHeights = stages.stream().map(
                 stage -> {
                     final double cHeight = stage.getOutEdges().stream().mapToDouble(
                             edge -> edge.getTargetNode().getContent().getBounds().getHeight() + STAGE_GAP).sum() + STAGE_GAP;
                     final double sHeight = stage.getContent().getBounds().getHeight();
-                    return cHeight > sHeight ? cHeight : sHeight;
-                }).max().getAsDouble();
+                    return Double.compare(cHeight, sHeight) > 0 ? cHeight : sHeight;
+                }).collect(Collectors.toList());
 
-        // calculate stage x coordinates
-        final List<Double> stageXs = DoubleStream.iterate(ORIGIN_X + EVENT_WIDTH + GAP, x -> x + stageWidth + GAP)
-                .limit(stages.size()).boxed().collect(Collectors.toList());
+        final List<Double> stageXs = new ArrayList<>(stages.size());
+        double widthSum = ORIGIN_X + EVENT_WIDTH + GAP;
+        for (Double width : stageWidths) {
+            stageXs.add(widthSum);
+            widthSum = widthSum + width + STAGE_GAP;
+        }
 
         IntStream.range(0, stages.size()).forEach(index -> {
             final Node<View, Edge<View, Node<View, Edge>>> node = stages.get(index);
             final double x = stageXs.get(index);
+            final double stageWidth = stageWidths.get(index);
+            final double stageHeight = stageHeights.get(index);
 
             // set stage bounds
             node.getContent().setBounds(Bounds.create(x, ORIGIN_Y, x + stageWidth, ORIGIN_Y + stageHeight));
@@ -220,7 +232,7 @@ public class CaseManagementDirectDiagramMarshaller extends BaseDirectDiagramMars
             });
         });
 
-        return stages.size() * (stageWidth + GAP);
+        return widthSum;
     }
 
     @Override
@@ -245,16 +257,20 @@ public class CaseManagementDirectDiagramMarshaller extends BaseDirectDiagramMars
             deleteChildEdge(root);
 
             // remove start event and end event
-            final Node<View<?>, Edge> startNode = root.getOutEdges().get(0).getTargetNode();
-            if (StartNoneEvent.class.isInstance(startNode.getContent().getDefinition())) {
-                deleteChild(root, startNode);
-                graph.removeNode(startNode.getUUID());
+            if (!root.getOutEdges().isEmpty()) {
+                final Node<View<?>, Edge> startNode = root.getOutEdges().get(0).getTargetNode();
+                if (StartNoneEvent.class.isInstance(startNode.getContent().getDefinition())) {
+                    deleteChild(root, startNode);
+                    graph.removeNode(startNode.getUUID());
+                }
             }
 
-            final Node<View<?>, Edge> endNode = root.getOutEdges().get(root.getOutEdges().size() - 1).getTargetNode();
-            if (EndNoneEvent.class.isInstance(endNode.getContent().getDefinition())) {
-                deleteChild(root, endNode);
-                graph.removeNode(endNode.getUUID());
+            if (!root.getOutEdges().isEmpty()) {
+                final Node<View<?>, Edge> endNode = root.getOutEdges().get(root.getOutEdges().size() - 1).getTargetNode();
+                if (EndNoneEvent.class.isInstance(endNode.getContent().getDefinition())) {
+                    deleteChild(root, endNode);
+                    graph.removeNode(endNode.getUUID());
+                }
             }
 
             // sort the child nodes in stages

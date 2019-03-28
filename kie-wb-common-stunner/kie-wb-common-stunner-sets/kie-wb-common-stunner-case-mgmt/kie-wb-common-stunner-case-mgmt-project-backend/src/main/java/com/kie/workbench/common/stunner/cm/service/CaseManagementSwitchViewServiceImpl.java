@@ -40,10 +40,14 @@ import org.kie.workbench.common.stunner.core.graph.Graph;
 import org.kie.workbench.common.stunner.core.graph.Node;
 import org.kie.workbench.common.stunner.core.graph.content.definition.DefinitionSet;
 import org.kie.workbench.common.stunner.project.diagram.ProjectDiagram;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @ApplicationScoped
 @Service
 public class CaseManagementSwitchViewServiceImpl implements CaseManagementSwitchViewService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(CaseManagementSwitchViewServiceImpl.class);
 
     private final FactoryManager factoryManager;
     private final Instance<DefinitionSetService> definitionSetServiceInstances;
@@ -66,14 +70,14 @@ public class CaseManagementSwitchViewServiceImpl implements CaseManagementSwitch
 
     @Override
     @SuppressWarnings("unchecked")
-    public ProjectDiagram switchView(final Diagram diagram, final String mappedDefSetId, final String mappedShapeSetId) {
+    public Optional<ProjectDiagram> switchView(final Diagram diagram, final String mappedDefSetId, final String mappedShapeSetId) {
         final Metadata metadata = diagram.getMetadata();
         final String defSetId = metadata.getDefinitionSetId();
 
         final Optional<DefinitionSetService> definitionSetServiceOptional =
                 definitionSetServices.stream().filter(s -> s.accepts(defSetId)).findAny();
 
-        return (ProjectDiagram) definitionSetServiceOptional.map(service -> {
+        return definitionSetServiceOptional.map(service -> {
             try {
                 final String rawData = service.getDiagramMarshaller().marshall(diagram);
 
@@ -88,22 +92,28 @@ public class CaseManagementSwitchViewServiceImpl implements CaseManagementSwitch
 
                         final DiagramFactory factory = factoryManager.registry().getDiagramFactory(graph.getContent().getDefinition(),
                                                                                                    metadata.getMetadataType());
-                        final Diagram mappedDiagram = factory.build(metadata.getTitle(), metadata, graph);
+                        final ProjectDiagram mappedDiagram = (ProjectDiagram) factory.build(metadata.getTitle(), metadata, graph);
 
                         mappedDiagram.getMetadata().setShapeSetId(mappedShapeSetId);
 
                         return mappedDiagram;
                     } catch (IOException e) {
-                        e.printStackTrace();
+                        return CaseManagementSwitchViewServiceImpl.this.handleError(Optional.of(e));
                     }
-
-                    return null;
-                }).orElse(null);
+                }).orElseGet(() -> CaseManagementSwitchViewServiceImpl.this.handleError(Optional.empty()));
             } catch (IOException e) {
-                e.printStackTrace();
+                return CaseManagementSwitchViewServiceImpl.this.handleError(Optional.of(e));
             }
+        });
+    }
 
-            return null;
-        }).orElse(null);
+    private ProjectDiagram handleError(final Optional<Exception> e) {
+        if (e.isPresent()) {
+            LOGGER.error("Error converting diagram.", e.get());
+        } else {
+            LOGGER.error("Error converting diagram.");
+        }
+
+        return null;
     }
 }
