@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.OptionalDouble;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -173,24 +172,16 @@ public class CaseManagementDirectDiagramMarshaller extends BaseDirectDiagramMars
 
         // calculate stage widths
         final List<Double> stageWidths = stages.stream().map(
-                stage -> {
-                    final OptionalDouble maxWidth = stage.getOutEdges().stream().mapToDouble(
-                            edge -> edge.getTargetNode().getContent().getBounds().getWidth() + STAGE_GAP * 2).max();
-                    if (maxWidth.isPresent()) {
-                        final double cWidth = maxWidth.getAsDouble();
-                        final double sWidth = stage.getContent().getBounds().getWidth();
-                        return Double.compare(cWidth, sWidth) > 0 ? cWidth : sWidth;
-                    }
-                    return stage.getContent().getBounds().getWidth();
-                }).collect(Collectors.toList());
+                stage -> stage.getOutEdges().stream().mapToDouble(
+                        edge -> edge.getTargetNode().getContent().getBounds().getWidth() + STAGE_GAP * 2).max().orElse(STAGE_GAP * 7))
+                .collect(Collectors.toList());
 
         // calculate stage height
         final List<Double> stageHeights = stages.stream().map(
                 stage -> {
                     final double cHeight = stage.getOutEdges().stream().mapToDouble(
-                            edge -> edge.getTargetNode().getContent().getBounds().getHeight() + STAGE_GAP).sum() + STAGE_GAP;
-                    final double sHeight = stage.getContent().getBounds().getHeight();
-                    return Double.compare(cHeight, sHeight) > 0 ? cHeight : sHeight;
+                            edge -> edge.getTargetNode().getContent().getBounds().getHeight() + STAGE_GAP).sum();
+                    return Double.compare(cHeight, 0.0) > 0 ? (cHeight + STAGE_GAP) : STAGE_GAP * 5;
                 }).collect(Collectors.toList());
 
         final List<Double> stageXs = new ArrayList<>(stages.size());

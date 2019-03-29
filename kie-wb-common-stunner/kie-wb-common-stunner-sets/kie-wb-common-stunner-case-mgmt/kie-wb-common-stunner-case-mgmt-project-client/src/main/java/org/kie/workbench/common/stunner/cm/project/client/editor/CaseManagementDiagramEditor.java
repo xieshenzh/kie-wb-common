@@ -287,6 +287,8 @@ public class CaseManagementDiagramEditor extends AbstractProjectDiagramEditor<Ca
 
                                 @Override
                                 public void onSuccess() {
+                                    CaseManagementDiagramEditor.this.getMenuSessionItems().getCommands()
+                                            .getCommands().destroyCommands();
                                     CaseManagementDiagramEditor.this.getMenuSessionItems()
                                             .bind(CaseManagementDiagramEditor.this.getSession());
                                 }
