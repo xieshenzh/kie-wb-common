@@ -338,4 +338,9 @@ public class CaseManagementDiagramEditor extends AbstractProjectDiagramEditor<Ca
             }
         }).switchView(diagram, defSetId, shapeDefId);
     }
+
+    @Override
+    protected Optional<String> getMainEditorPageTitle() {
+        return Optional.of(this.getTranslationService().getValue(CaseManagementProjectClientConstants.CaseManagementMainEditorPageTitle));
+    }
 }

@@ -19,34 +19,95 @@ package org.kie.workbench.common.stunner.bpmn.backend.converters.tostunner.prope
 import java.util.Collections;
 import java.util.UUID;
 
+import org.eclipse.bpmn2.AdHocOrdering;
 import org.eclipse.bpmn2.AdHocSubProcess;
 import org.eclipse.bpmn2.Definitions;
+import org.eclipse.bpmn2.FormalExpression;
 import org.eclipse.bpmn2.di.BPMNDiagram;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.kie.workbench.common.stunner.bpmn.backend.converters.customproperties.CustomElement;
 import org.kie.workbench.common.stunner.bpmn.backend.converters.tostunner.DefinitionResolver;
+import org.kie.workbench.common.stunner.bpmn.definition.property.task.ScriptTypeValue;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.kie.workbench.common.stunner.bpmn.backend.converters.fromstunner.Factories.bpmn2;
 import static org.kie.workbench.common.stunner.bpmn.backend.converters.fromstunner.Factories.di;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+@RunWith(MockitoJUnitRunner.class)
 public class AdHocSubProcessPropertyReaderTest {
 
+    private static final String SCRIPT = "SCRIPT";
+
+    @Mock
+    private AdHocSubProcess process;
+
+    @Mock
+    private BPMNDiagram diagram;
+
+    @Mock
     private DefinitionResolver definitionResolver;
+
+    private AdHocSubProcessPropertyReader propertyReader;
+
+    private DefinitionResolver definitionResolverReal;
 
     private AdHocSubProcessPropertyReader tested;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         Definitions definitions = bpmn2.createDefinitions();
         definitions.getRootElements().add(bpmn2.createProcess());
         BPMNDiagram bpmnDiagram = di.createBPMNDiagram();
         bpmnDiagram.setPlane(di.createBPMNPlane());
         definitions.getDiagrams().add(bpmnDiagram);
 
-        definitionResolver = new DefinitionResolver(definitions, Collections.emptyList());
+        definitionResolverReal = new DefinitionResolver(definitions, Collections.emptyList());
+
+        propertyReader = new AdHocSubProcessPropertyReader(process, diagram, definitionResolver);
+    }
+
+    @Test
+    public void testGetAdHocCompletionConditionWithFormalExpression() {
+        for (Scripts.LANGUAGE language : Scripts.LANGUAGE.values()) {
+            testGetAdHocCompletionConditionWithFormalExpression(new ScriptTypeValue(language.language(), SCRIPT), language.format(), SCRIPT);
+        }
+    }
+
+    @Test
+    public void testGetAdHocCompletionConditionWithoutFormalExpression() {
+        when(process.getCompletionCondition()).thenReturn(null);
+        assertEquals(new ScriptTypeValue(Scripts.LANGUAGE.MVEL.language(), "autocomplete"), propertyReader.getAdHocCompletionCondition());
+    }
+
+    private void testGetAdHocCompletionConditionWithFormalExpression(ScriptTypeValue expectedValue, String currentLanguage, String currentBody) {
+        FormalExpression formalExpression = mock(FormalExpression.class);
+        when(formalExpression.getLanguage()).thenReturn(currentLanguage);
+        when(formalExpression.getBody()).thenReturn(currentBody);
+        when(process.getCompletionCondition()).thenReturn(formalExpression);
+        assertEquals(expectedValue, propertyReader.getAdHocCompletionCondition());
+    }
+
+    @Test
+    public void testGetAdHocOrderingSequential() {
+        testGetAdHocOrdering("Sequential", AdHocOrdering.SEQUENTIAL);
+    }
+
+    @Test
+    public void testGetAdHocOrderingParallel() {
+        testGetAdHocOrdering("Parallel", AdHocOrdering.PARALLEL);
+    }
+
+    private void testGetAdHocOrdering(String expectedValue, AdHocOrdering currentOrdering) {
+        when(process.getOrdering()).thenReturn(currentOrdering);
+        assertEquals(expectedValue, propertyReader.getAdHocOrdering());
     }
 
     @Test
@@ -58,8 +119,8 @@ public class AdHocSubProcessPropertyReaderTest {
         CustomElement.autoStart.of(adHocSubProcess).set(Boolean.TRUE);
 
         tested = new AdHocSubProcessPropertyReader(adHocSubProcess,
-                                                   definitionResolver.getDiagram(),
-                                                   definitionResolver);
+                                                   definitionResolverReal.getDiagram(),
+                                                   definitionResolverReal);
 
         assertTrue(tested.isAdHocAutostart());
     }
@@ -73,8 +134,8 @@ public class AdHocSubProcessPropertyReaderTest {
         CustomElement.autoStart.of(adHocSubProcess).set(Boolean.FALSE);
 
         tested = new AdHocSubProcessPropertyReader(adHocSubProcess,
-                                                   definitionResolver.getDiagram(),
-                                                   definitionResolver);
+                                                   definitionResolverReal.getDiagram(),
+                                                   definitionResolverReal);
 
         assertFalse(tested.isAdHocAutostart());
     }
