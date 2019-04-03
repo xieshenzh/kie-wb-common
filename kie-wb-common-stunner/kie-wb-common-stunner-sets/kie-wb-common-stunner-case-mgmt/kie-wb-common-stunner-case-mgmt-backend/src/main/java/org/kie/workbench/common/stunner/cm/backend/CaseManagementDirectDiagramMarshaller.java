@@ -188,7 +188,7 @@ public class CaseManagementDirectDiagramMarshaller extends BaseDirectDiagramMars
         double widthSum = ORIGIN_X + EVENT_WIDTH + GAP;
         for (Double width : stageWidths) {
             stageXs.add(widthSum);
-            widthSum = widthSum + width + STAGE_GAP;
+            widthSum = widthSum + width + GAP;
         }
 
         IntStream.range(0, stages.size()).forEach(index -> {

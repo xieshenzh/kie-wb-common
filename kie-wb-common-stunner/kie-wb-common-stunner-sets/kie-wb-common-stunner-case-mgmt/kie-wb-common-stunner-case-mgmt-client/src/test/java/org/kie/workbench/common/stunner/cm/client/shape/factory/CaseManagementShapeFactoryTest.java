@@ -73,6 +73,7 @@ import org.mockito.Mock;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
@@ -274,17 +275,17 @@ public class CaseManagementShapeFactoryTest {
         assertShapeGlyph(new CaseManagementDiagram());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void checkLane() {
-        assertShapeConstruction(new Lane(),
-                                null);
+        assertShapeConstructionNotSupported(new Lane(),
+                                            null);
         assertShapeGlyph(new Lane());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void checkNoneTask() {
-        assertShapeConstruction(new NoneTask(),
-                                null);
+        assertShapeConstructionNotSupported(new NoneTask(),
+                                            null);
         assertShapeGlyph(new NoneTask());
     }
 
@@ -295,45 +296,45 @@ public class CaseManagementShapeFactoryTest {
         assertShapeGlyph(new UserTask());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void checkBusinessRuleTask() {
-        assertShapeConstruction(new BusinessRuleTask(),
-                                null);
+        assertShapeConstructionNotSupported(new BusinessRuleTask(),
+                                            null);
         assertShapeGlyph(new BusinessRuleTask());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void checkStartNoneEvent() {
-        assertShapeConstruction(new StartNoneEvent(),
-                                null);
+        assertShapeConstructionNotSupported(new StartNoneEvent(),
+                                            null);
         assertShapeGlyph(new StartNoneEvent());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void checkEndNoneEvent() {
-        assertShapeConstruction(new EndNoneEvent(),
-                                null);
+        assertShapeConstructionNotSupported(new EndNoneEvent(),
+                                            null);
         assertShapeGlyph(new EndNoneEvent());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void checkEndTerminateEvent() {
-        assertShapeConstruction(new EndTerminateEvent(),
-                                null);
+        assertShapeConstructionNotSupported(new EndTerminateEvent(),
+                                            null);
         assertShapeGlyph(new EndTerminateEvent());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void checkParallelGateway() {
-        assertShapeConstruction(new ParallelGateway(),
-                                null);
+        assertShapeConstructionNotSupported(new ParallelGateway(),
+                                            null);
         assertShapeGlyph(new ParallelGateway());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void checkExclusiveDatabasedGateway() {
-        assertShapeConstruction(new ExclusiveGateway(),
-                                null);
+        assertShapeConstructionNotSupported(new ExclusiveGateway(),
+                                            null);
         assertShapeGlyph(new ExclusiveGateway());
     }
 
@@ -375,6 +376,14 @@ public class CaseManagementShapeFactoryTest {
         assertNotNull(shape.getShapeView());
 
         o.accept(shape);
+    }
+
+    private void assertShapeConstructionNotSupported(final BPMNDefinition definition,
+                                                     final Consumer<Shape> o) {
+        when(definitionAdapter.getId(eq(definition))).thenReturn(DefinitionId.build(definition.getClass().getName()));
+
+        final Shape<? extends ShapeView> shape = factory.newShape(definition);
+        assertNull(shape);
     }
 
     @SuppressWarnings("unchecked")
