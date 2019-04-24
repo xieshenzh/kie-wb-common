@@ -19,6 +19,8 @@ package org.kie.workbench.common.stunner.cm.factory;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.kie.workbench.common.stunner.bpmn.definition.EndNoneEvent;
+import org.kie.workbench.common.stunner.bpmn.definition.StartNoneEvent;
 import org.kie.workbench.common.stunner.bpmn.factory.BPMNGraphFactoryImpl;
 import org.kie.workbench.common.stunner.cm.definition.AdHocSubprocess;
 import org.kie.workbench.common.stunner.cm.definition.CaseManagementDiagram;
@@ -103,6 +105,14 @@ public class CaseManagementGraphFactoryImplTest {
         when(factoryManager.newElement(anyString(),
                                        eq(AdHocSubprocess.class))).thenReturn(stageNode);
 
+        final Node startEventNode = mock(Node.class);
+        when(factoryManager.newElement(anyString(),
+                                       eq(StartNoneEvent.class))).thenReturn(startEventNode);
+
+        final Node endEventNode = mock(Node.class);
+        when(factoryManager.newElement(anyString(),
+                                       eq(EndNoneEvent.class))).thenReturn(endEventNode);
+
         final Graph<DefinitionSet, Node> graph = factory.build("uuid1", "defSetId");
 
         assertNotNull(graph);
@@ -118,12 +128,18 @@ public class CaseManagementGraphFactoryImplTest {
         verify(graphCommandFactory,
                times(1)).addChildNode(eq(diagramNode), eq(stageNode));
 
+        verify(graphCommandFactory,
+               times(1)).addChildNode(eq(diagramNode), eq(startEventNode));
+
+        verify(graphCommandFactory,
+               times(1)).addChildNode(eq(diagramNode), eq(endEventNode));
+
         verify(graphCommandManager,
                times(1)).execute(any(GraphCommandExecutionContext.class), commandCaptor.capture());
 
         final Command command = commandCaptor.getValue();
         assertTrue(command instanceof CompositeCommand);
         final CompositeCommand compositeCommand = (CompositeCommand) command;
-        assertEquals(2, compositeCommand.size());
+        assertEquals(4, compositeCommand.size());
     }
 }

@@ -32,6 +32,8 @@ import org.kie.workbench.common.stunner.core.graph.impl.EdgeImpl;
 import org.kie.workbench.common.stunner.core.rule.RuleViolation;
 import org.kie.workbench.common.stunner.core.util.UUID;
 
+import static org.kie.workbench.common.stunner.cm.client.command.util.CaseManagementCommandUtil.getNewChildIndex;
+
 public class CaseManagementSetChildNodeGraphCommand extends AbstractGraphCommand {
 
     protected final OptionalInt index;
@@ -119,7 +121,7 @@ public class CaseManagementSetChildNodeGraphCommand extends AbstractGraphCommand
         edge.setContent(new Child());
         edge.setSourceNode(parent);
         edge.setTargetNode(child);
-        parent.getOutEdges().add(index.orElseGet(() -> parent.getOutEdges().size()), edge);
+        parent.getOutEdges().add(index.orElseGet(() -> getNewChildIndex(parent)), edge);
         child.getInEdges().add(edge);
         getMutableIndex(context).addEdge(edge);
     }

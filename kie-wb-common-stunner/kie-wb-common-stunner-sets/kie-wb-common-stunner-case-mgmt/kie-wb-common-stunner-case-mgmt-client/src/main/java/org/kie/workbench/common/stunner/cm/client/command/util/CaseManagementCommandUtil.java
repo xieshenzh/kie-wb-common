@@ -17,9 +17,17 @@
 package org.kie.workbench.common.stunner.cm.client.command.util;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
+import org.kie.workbench.common.stunner.cm.definition.AdHocSubprocess;
+import org.kie.workbench.common.stunner.cm.definition.CaseManagementDiagram;
+import org.kie.workbench.common.stunner.cm.definition.ReusableSubprocess;
+import org.kie.workbench.common.stunner.cm.definition.UserTask;
 import org.kie.workbench.common.stunner.core.graph.Edge;
 import org.kie.workbench.common.stunner.core.graph.Node;
+import org.kie.workbench.common.stunner.core.graph.content.relationship.Child;
+import org.kie.workbench.common.stunner.core.graph.content.view.View;
 
 public class CaseManagementCommandUtil {
 
@@ -37,5 +45,41 @@ public class CaseManagementCommandUtil {
             }
         }
         return -1;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static int getNewChildIndex(final Node<View, Edge> parent) {
+        if (Objects.isNull(parent.getContent())) {
+            return 0;
+        }
+
+        if (parent.getContent().getDefinition() instanceof CaseManagementDiagram) {
+            return (int) parent.getOutEdges().stream()
+                    .filter(edge -> edge.getContent() instanceof Child)
+                    .filter(edge -> isStage(edge.getTargetNode())).count();
+        } else if (isStage(parent)) {
+            return parent.getOutEdges().size();
+        } else {
+            return 0;
+        }
+    }
+
+    public static boolean isStage(final Node<View, Edge> node) {
+        if (node.getContent().getDefinition() instanceof AdHocSubprocess) {
+            final List<Node> childNodes = node.getOutEdges().stream()
+                    .filter(edge -> edge.getContent() instanceof Child)
+                    .map(Edge::getTargetNode).collect(Collectors.toList());
+
+            if (childNodes.isEmpty()) {
+                return true;
+            }
+
+            if (childNodes.stream().map(cNode -> ((View) cNode.getContent()).getDefinition())
+                    .allMatch(def -> def instanceof UserTask || def instanceof ReusableSubprocess)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

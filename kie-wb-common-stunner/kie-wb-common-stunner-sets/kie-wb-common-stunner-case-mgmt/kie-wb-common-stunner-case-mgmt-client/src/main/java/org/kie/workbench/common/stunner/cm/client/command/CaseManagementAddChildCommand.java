@@ -25,6 +25,8 @@ import org.kie.workbench.common.stunner.core.graph.Node;
 import org.kie.workbench.common.stunner.core.graph.command.GraphCommandExecutionContext;
 import org.kie.workbench.common.stunner.core.rule.RuleViolation;
 
+import static org.kie.workbench.common.stunner.cm.client.command.util.CaseManagementCommandUtil.getNewChildIndex;
+
 public class CaseManagementAddChildCommand extends org.kie.workbench.common.stunner.core.client.canvas.command.AddChildNodeCommand {
 
     private int index;
@@ -36,7 +38,7 @@ public class CaseManagementAddChildCommand extends org.kie.workbench.common.stun
               candidate,
               shapeSetId);
 
-        this.index = parent.getOutEdges().size();
+        this.index = getNewChildIndex(parent);
     }
 
     @Override

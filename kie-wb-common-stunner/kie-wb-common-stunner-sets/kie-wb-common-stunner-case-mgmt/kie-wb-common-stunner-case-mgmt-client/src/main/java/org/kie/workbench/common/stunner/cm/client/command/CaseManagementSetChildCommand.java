@@ -29,6 +29,8 @@ import org.kie.workbench.common.stunner.core.graph.Node;
 import org.kie.workbench.common.stunner.core.graph.command.GraphCommandExecutionContext;
 import org.kie.workbench.common.stunner.core.rule.RuleViolation;
 
+import static org.kie.workbench.common.stunner.cm.client.command.util.CaseManagementCommandUtil.getNewChildIndex;
+
 public class CaseManagementSetChildCommand extends org.kie.workbench.common.stunner.core.client.canvas.command.SetChildrenCommand {
 
     protected final OptionalInt index;
@@ -39,7 +41,7 @@ public class CaseManagementSetChildCommand extends org.kie.workbench.common.stun
                                          final Node child) {
         this(parent,
              child,
-             OptionalInt.of(parent.getOutEdges().size()),
+             OptionalInt.of(getNewChildIndex(parent)),
              Optional.empty(),
              OptionalInt.empty());
     }

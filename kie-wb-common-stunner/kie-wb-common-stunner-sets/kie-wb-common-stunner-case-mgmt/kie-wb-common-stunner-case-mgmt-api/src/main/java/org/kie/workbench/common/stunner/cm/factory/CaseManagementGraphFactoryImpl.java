@@ -23,6 +23,8 @@ import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
 import org.kie.workbench.common.stunner.bpmn.definition.BPMNDiagram;
+import org.kie.workbench.common.stunner.bpmn.definition.EndNoneEvent;
+import org.kie.workbench.common.stunner.bpmn.definition.StartNoneEvent;
 import org.kie.workbench.common.stunner.bpmn.factory.BPMNGraphFactory;
 import org.kie.workbench.common.stunner.bpmn.factory.BPMNGraphFactoryImpl;
 import org.kie.workbench.common.stunner.cm.definition.AdHocSubprocess;
@@ -135,11 +137,19 @@ public class CaseManagementGraphFactoryImpl extends AbstractGraphFactory impleme
         final Node<Definition<CaseManagementDiagram>, Edge> diagramNode =
                 (Node<Definition<CaseManagementDiagram>, Edge>) factoryManager.newElement(UUID.uuid(), diagramType);
 
+        final Node<Definition<AdHocSubprocess>, Edge> startEventNode =
+                (Node<Definition<AdHocSubprocess>, Edge>) factoryManager.newElement(UUID.uuid(), StartNoneEvent.class);
+
         final Node<Definition<AdHocSubprocess>, Edge> stageNode =
                 (Node<Definition<AdHocSubprocess>, Edge>) factoryManager.newElement(UUID.uuid(), AdHocSubprocess.class);
 
+        final Node<Definition<AdHocSubprocess>, Edge> endEventNode =
+                (Node<Definition<AdHocSubprocess>, Edge>) factoryManager.newElement(UUID.uuid(), EndNoneEvent.class);
+
         commands.add(graphCommandFactory.addNode(diagramNode));
+        commands.add(graphCommandFactory.addChildNode(diagramNode, startEventNode));
         commands.add(graphCommandFactory.addChildNode(diagramNode, stageNode));
+        commands.add(graphCommandFactory.addChildNode(diagramNode, endEventNode));
 
         return commands;
     }
