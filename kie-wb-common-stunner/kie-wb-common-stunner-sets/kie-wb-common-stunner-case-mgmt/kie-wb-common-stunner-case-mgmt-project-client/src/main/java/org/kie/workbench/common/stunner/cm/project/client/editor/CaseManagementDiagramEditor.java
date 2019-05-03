@@ -16,10 +16,9 @@
 
 package org.kie.workbench.common.stunner.cm.project.client.editor;
 
-import java.util.function.Consumer;
-
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 import javax.enterprise.context.Dependent;

@@ -25,11 +25,10 @@ import org.kie.workbench.common.stunner.core.graph.Node;
 import org.kie.workbench.common.stunner.core.graph.command.GraphCommandExecutionContext;
 import org.kie.workbench.common.stunner.core.rule.RuleViolation;
 
-import static org.kie.workbench.common.stunner.cm.client.command.util.CaseManagementCommandUtil.getNewChildIndex;
+import static org.kie.workbench.common.stunner.cm.client.command.util.CaseManagementCommandUtil.getCanvasNewChildIndex;
+import static org.kie.workbench.common.stunner.cm.client.command.util.CaseManagementCommandUtil.getGraphNewChildIndex;
 
 public class CaseManagementAddChildCommand extends org.kie.workbench.common.stunner.core.client.canvas.command.AddChildNodeCommand {
-
-    private int index;
 
     public CaseManagementAddChildCommand(final Node parent,
                                          final Node candidate,
@@ -37,8 +36,6 @@ public class CaseManagementAddChildCommand extends org.kie.workbench.common.stun
         super(parent,
               candidate,
               shapeSetId);
-
-        this.index = getNewChildIndex(parent);
     }
 
     @Override
@@ -46,7 +43,7 @@ public class CaseManagementAddChildCommand extends org.kie.workbench.common.stun
         //This registers the Candidate in the Graph and forms the Child Relationship between Parent and Candidate
         return new CaseManagementAddChildNodeGraphCommand(parent,
                                                           candidate,
-                                                          index);
+                                                          getGraphNewChildIndex(parent));
     }
 
     @Override
@@ -55,6 +52,6 @@ public class CaseManagementAddChildCommand extends org.kie.workbench.common.stun
         return new CaseManagementAddChildNodeCanvasCommand(parent,
                                                            candidate,
                                                            shapeSetId,
-                                                           index);
+                                                           getCanvasNewChildIndex(parent));
     }
 }

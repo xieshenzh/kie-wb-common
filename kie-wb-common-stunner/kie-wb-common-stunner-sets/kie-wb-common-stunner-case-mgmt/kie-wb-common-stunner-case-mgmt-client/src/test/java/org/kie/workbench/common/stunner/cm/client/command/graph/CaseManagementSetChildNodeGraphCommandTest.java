@@ -36,7 +36,7 @@ import static org.junit.Assert.assertTrue;
 public class CaseManagementSetChildNodeGraphCommandTest extends CaseManagementAbstractGraphCommandTest {
 
     private OptionalInt index;
-    private Optional<Node> originalParent;
+    private Optional<Node<View<?>, Edge>> originalParent;
     private OptionalInt originalIndex;
 
     @Before
@@ -70,10 +70,10 @@ public class CaseManagementSetChildNodeGraphCommandTest extends CaseManagementAb
         assertTrue(edge.getContent() instanceof Child);
     }
 
-    private CaseManagementSetChildNodeGraphCommand setChildNode(final Node parent,
-                                                                final Node candidate,
+    private CaseManagementSetChildNodeGraphCommand setChildNode(final Node<View<?>, Edge> parent,
+                                                                final Node<View<?>, Edge> candidate,
                                                                 final OptionalInt index,
-                                                                final Optional<Node> originalParent,
+                                                                final Optional<Node<View<?>, Edge>> originalParent,
                                                                 final OptionalInt originalIndex) {
         final CaseManagementSetChildNodeGraphCommand command = new CaseManagementSetChildNodeGraphCommand(parent,
                                                                                                           candidate,

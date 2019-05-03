@@ -75,16 +75,18 @@ public class CaseManagementCanvasCommandFactory extends LienzoCanvasCommandFacto
                                                  child);
     }
 
-    public CanvasCommand<AbstractCanvasHandler> setChildNode(final Node parent,
-                                                             final Node child,
+    public CanvasCommand<AbstractCanvasHandler> setChildNode(final Node<View<?>, Edge> parent,
+                                                             final Node<View<?>, Edge> child,
                                                              final OptionalInt index,
-                                                             final Optional<Node> originalParent,
-                                                             final OptionalInt originalIndex) {
+                                                             final Optional<Node<View<?>, Edge>> originalParent,
+                                                             final OptionalInt originalIndex,
+                                                             final Optional<Node<View<?>, Edge>> originalSibling) {
         return new CaseManagementSetChildCommand(parent,
                                                  child,
                                                  index,
                                                  originalParent,
-                                                 originalIndex);
+                                                 originalIndex,
+                                                 originalSibling);
     }
 
     @Override

@@ -50,6 +50,6 @@ public class CaseManagementCommandUtilTest {
         when(edge.getTargetNode()).thenReturn(child);
         when(parent.getOutEdges()).thenReturn(Collections.singletonList(edge));
 
-        assertEquals(0, CaseManagementCommandUtil.getChildIndex(parent, child));
+        assertEquals(0, CaseManagementCommandUtil.getCanvasChildIndex(parent, child));
     }
 }

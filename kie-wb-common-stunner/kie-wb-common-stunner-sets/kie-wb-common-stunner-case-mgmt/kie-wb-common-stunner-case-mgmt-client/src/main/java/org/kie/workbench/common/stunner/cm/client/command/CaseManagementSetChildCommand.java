@@ -17,45 +17,56 @@
 package org.kie.workbench.common.stunner.cm.client.command;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.stream.Collectors;
 
+import org.kie.workbench.common.stunner.bpmn.definition.StartNoneEvent;
 import org.kie.workbench.common.stunner.cm.client.command.canvas.CaseManagementSetChildNodeCanvasCommand;
 import org.kie.workbench.common.stunner.cm.client.command.graph.CaseManagementSetChildNodeGraphCommand;
 import org.kie.workbench.common.stunner.core.client.canvas.AbstractCanvasHandler;
 import org.kie.workbench.common.stunner.core.client.canvas.command.AbstractCanvasCommand;
 import org.kie.workbench.common.stunner.core.command.Command;
+import org.kie.workbench.common.stunner.core.graph.Edge;
 import org.kie.workbench.common.stunner.core.graph.Node;
 import org.kie.workbench.common.stunner.core.graph.command.GraphCommandExecutionContext;
+import org.kie.workbench.common.stunner.core.graph.content.view.View;
 import org.kie.workbench.common.stunner.core.rule.RuleViolation;
 
-import static org.kie.workbench.common.stunner.cm.client.command.util.CaseManagementCommandUtil.getNewChildIndex;
+import static org.kie.workbench.common.stunner.cm.client.command.util.CaseManagementCommandUtil.getCanvasNewChildIndex;
+import static org.kie.workbench.common.stunner.cm.client.command.util.CaseManagementCommandUtil.getGraphChildIndex;
+import static org.kie.workbench.common.stunner.cm.client.command.util.CaseManagementCommandUtil.isStage;
 
 public class CaseManagementSetChildCommand extends org.kie.workbench.common.stunner.core.client.canvas.command.SetChildrenCommand {
 
-    protected final OptionalInt index;
-    protected final Optional<Node> originalParent;
-    protected final OptionalInt originalIndex;
+    protected final OptionalInt canvasIndex;
+    protected final Optional<Node<View<?>, Edge>> originalParent;
+    protected final OptionalInt originaCanvaslIndex;
+    protected final Optional<Node<View<?>, Edge>> originalSibling;
 
-    public CaseManagementSetChildCommand(final Node parent,
-                                         final Node child) {
+    public CaseManagementSetChildCommand(final Node<View<?>, Edge> parent,
+                                         final Node<View<?>, Edge> child) {
         this(parent,
              child,
-             OptionalInt.of(getNewChildIndex(parent)),
+             OptionalInt.of(getCanvasNewChildIndex(parent)),
              Optional.empty(),
-             OptionalInt.empty());
+             OptionalInt.empty(),
+             Optional.empty());
     }
 
-    public CaseManagementSetChildCommand(final Node parent,
-                                         final Node child,
-                                         final OptionalInt index,
-                                         final Optional<Node> originalParent,
-                                         final OptionalInt originalIndex) {
+    public CaseManagementSetChildCommand(final Node<View<?>, Edge> parent,
+                                         final Node<View<?>, Edge> child,
+                                         final OptionalInt canvasIndex,
+                                         final Optional<Node<View<?>, Edge>> originalParent,
+                                         final OptionalInt originaCanvaslIndex,
+                                         final Optional<Node<View<?>, Edge>> originalSibling) {
         super(parent,
               Collections.singleton(child));
-        this.index = index;
+        this.canvasIndex = canvasIndex;
         this.originalParent = originalParent;
-        this.originalIndex = originalIndex;
+        this.originaCanvaslIndex = originaCanvaslIndex;
+        this.originalSibling = originalSibling;
     }
 
     public Node getCandidate() {
@@ -65,6 +76,37 @@ public class CaseManagementSetChildCommand extends org.kie.workbench.common.stun
     @Override
     @SuppressWarnings("unchecked")
     protected Command<GraphCommandExecutionContext, RuleViolation> newGraphCommand(final AbstractCanvasHandler context) {
+        OptionalInt originalIndex = originalParent
+                .map(p -> isStage(parent, getCandidate())
+                        ? OptionalInt.of(getGraphChildIndex(p, getCandidate()))
+                        : originaCanvaslIndex)
+                .orElseGet(OptionalInt::empty);
+
+        OptionalInt index = originalSibling.map(s -> {
+            List<Node<View<?>, Edge>> childNodes = ((Node<View<?>, Edge>) parent).getOutEdges().stream()
+                    .map(e -> (Node<View<?>, Edge>) e.getTargetNode()).collect(Collectors.toList());
+            for (int i = 0, n = childNodes.size(); i < n; i++) {
+                if (s.equals(childNodes.get(i))) {
+                    return OptionalInt.of(i);
+                }
+            }
+            return OptionalInt.empty();
+        }).orElseGet(() -> {
+            if (canvasIndex.isPresent() && canvasIndex.getAsInt() == 0) {
+                List<Node<View<?>, Edge>> childNodes = ((Node<View<?>, Edge>) parent).getOutEdges().stream()
+                        .map(e -> (Node<View<?>, Edge>) e.getTargetNode()).collect(Collectors.toList());
+                int i = 0;
+                for (int n = childNodes.size(); i < n; i++) {
+                    if (childNodes.get(i) instanceof StartNoneEvent) {
+                        OptionalInt.of(++i);
+                    }
+                }
+                return OptionalInt.of(0);
+            } else {
+                return OptionalInt.empty();
+            }
+        });
+
         return new CaseManagementSetChildNodeGraphCommand(parent,
                                                           getCandidate(),
                                                           index,
@@ -76,8 +118,8 @@ public class CaseManagementSetChildCommand extends org.kie.workbench.common.stun
     protected AbstractCanvasCommand newCanvasCommand(final AbstractCanvasHandler context) {
         return new CaseManagementSetChildNodeCanvasCommand(parent,
                                                            getCandidate(),
-                                                           index,
+                                                           canvasIndex,
                                                            originalParent,
-                                                           originalIndex);
+                                                           originaCanvaslIndex);
     }
 }

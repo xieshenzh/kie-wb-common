@@ -24,6 +24,7 @@ import javax.inject.Inject;
 
 import org.kie.workbench.common.stunner.bpmn.definition.BPMNDiagram;
 import org.kie.workbench.common.stunner.bpmn.definition.EndNoneEvent;
+import org.kie.workbench.common.stunner.bpmn.definition.SequenceFlow;
 import org.kie.workbench.common.stunner.bpmn.definition.StartNoneEvent;
 import org.kie.workbench.common.stunner.bpmn.factory.BPMNGraphFactory;
 import org.kie.workbench.common.stunner.bpmn.factory.BPMNGraphFactoryImpl;
@@ -44,6 +45,9 @@ import org.kie.workbench.common.stunner.core.graph.command.GraphCommandManager;
 import org.kie.workbench.common.stunner.core.graph.command.impl.GraphCommandFactory;
 import org.kie.workbench.common.stunner.core.graph.content.definition.Definition;
 import org.kie.workbench.common.stunner.core.graph.content.definition.DefinitionSet;
+import org.kie.workbench.common.stunner.core.graph.content.view.Point2D;
+import org.kie.workbench.common.stunner.core.graph.content.view.Point2DConnection;
+import org.kie.workbench.common.stunner.core.graph.content.view.View;
 import org.kie.workbench.common.stunner.core.graph.processing.index.GraphIndexBuilder;
 import org.kie.workbench.common.stunner.core.rule.RuleManager;
 import org.kie.workbench.common.stunner.core.util.UUID;
@@ -137,19 +141,29 @@ public class CaseManagementGraphFactoryImpl extends AbstractGraphFactory impleme
         final Node<Definition<CaseManagementDiagram>, Edge> diagramNode =
                 (Node<Definition<CaseManagementDiagram>, Edge>) factoryManager.newElement(UUID.uuid(), diagramType);
 
-        final Node<Definition<AdHocSubprocess>, Edge> startEventNode =
-                (Node<Definition<AdHocSubprocess>, Edge>) factoryManager.newElement(UUID.uuid(), StartNoneEvent.class);
+        final Node<View<AdHocSubprocess>, Edge> startEventNode =
+                (Node<View<AdHocSubprocess>, Edge>) factoryManager.newElement(UUID.uuid(), StartNoneEvent.class);
 
-        final Node<Definition<AdHocSubprocess>, Edge> stageNode =
-                (Node<Definition<AdHocSubprocess>, Edge>) factoryManager.newElement(UUID.uuid(), AdHocSubprocess.class);
+        final Node<View<AdHocSubprocess>, Edge> stageNode =
+                (Node<View<AdHocSubprocess>, Edge>) factoryManager.newElement(UUID.uuid(), AdHocSubprocess.class);
 
-        final Node<Definition<AdHocSubprocess>, Edge> endEventNode =
-                (Node<Definition<AdHocSubprocess>, Edge>) factoryManager.newElement(UUID.uuid(), EndNoneEvent.class);
+        final Node<View<AdHocSubprocess>, Edge> endEventNode =
+                (Node<View<AdHocSubprocess>, Edge>) factoryManager.newElement(UUID.uuid(), EndNoneEvent.class);
+
+        final Edge<View<SequenceFlow>, Node> startEventEdge =
+                (Edge<View<SequenceFlow>, Node>) factoryManager.newElement(UUID.uuid(), SequenceFlow.class);
+
+        final Edge<View<SequenceFlow>, Node> endEventEdge =
+                (Edge<View<SequenceFlow>, Node>) factoryManager.newElement(UUID.uuid(), SequenceFlow.class);
 
         commands.add(graphCommandFactory.addNode(diagramNode));
         commands.add(graphCommandFactory.addChildNode(diagramNode, startEventNode));
         commands.add(graphCommandFactory.addChildNode(diagramNode, stageNode));
         commands.add(graphCommandFactory.addChildNode(diagramNode, endEventNode));
+        commands.add(graphCommandFactory.setSourceNode(startEventNode, startEventEdge, Point2DConnection.at(Point2D.create(475d, 475d))));
+        commands.add(graphCommandFactory.setTargetNode(stageNode, startEventEdge, Point2DConnection.at(Point2D.create(475d, 475d))));
+        commands.add(graphCommandFactory.setSourceNode(stageNode, endEventEdge, Point2DConnection.at(Point2D.create(475d, 475d))));
+        commands.add(graphCommandFactory.setTargetNode(endEventNode, endEventEdge, Point2DConnection.at(Point2D.create(475d, 475d))));
 
         return commands;
     }

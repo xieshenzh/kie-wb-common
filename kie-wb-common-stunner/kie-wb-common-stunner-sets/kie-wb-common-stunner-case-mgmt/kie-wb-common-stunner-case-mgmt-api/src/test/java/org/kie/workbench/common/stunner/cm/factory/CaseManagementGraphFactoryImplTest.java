@@ -140,6 +140,6 @@ public class CaseManagementGraphFactoryImplTest {
         final Command command = commandCaptor.getValue();
         assertTrue(command instanceof CompositeCommand);
         final CompositeCommand compositeCommand = (CompositeCommand) command;
-        assertEquals(4, compositeCommand.size());
+        assertEquals(8, compositeCommand.size());
     }
 }

@@ -184,14 +184,16 @@ public class CaseManagementContainmentAcceptorControlImplTest {
                                   child,
                                   OptionalInt.empty(),
                                   Optional.empty(),
-                                  OptionalInt.empty());
+                                  OptionalInt.empty(),
+                                  Optional.empty());
 
         verify(canvasCommandFactory,
                times(1)).setChildNode(eq(parent),
                                       eq(child),
                                       eq(OptionalInt.empty()),
                                       eq(Optional.empty()),
-                                      eq(OptionalInt.empty()));
+                                      eq(OptionalInt.empty()),
+                                      eq(Optional.empty()));
     }
 
     @Test
@@ -262,7 +264,8 @@ public class CaseManagementContainmentAcceptorControlImplTest {
                                       any(Node.class),
                                       eq(OptionalInt.of(0)),
                                       eq(Optional.empty()),
-                                      eq(OptionalInt.empty()));
+                                      eq(OptionalInt.empty()),
+                                      eq(Optional.empty()));
     }
 
     private ILayoutHandler getILayoutHandler(final WiresContainer parentShape,

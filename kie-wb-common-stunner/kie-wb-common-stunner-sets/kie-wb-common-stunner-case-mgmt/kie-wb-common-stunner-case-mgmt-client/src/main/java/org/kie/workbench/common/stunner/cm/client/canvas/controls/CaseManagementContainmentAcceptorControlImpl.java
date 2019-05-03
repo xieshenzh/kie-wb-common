@@ -43,6 +43,7 @@ import org.kie.workbench.common.stunner.core.graph.Edge;
 import org.kie.workbench.common.stunner.core.graph.Element;
 import org.kie.workbench.common.stunner.core.graph.Node;
 import org.kie.workbench.common.stunner.core.graph.content.relationship.Child;
+import org.kie.workbench.common.stunner.core.graph.content.view.View;
 
 @Dependent
 @CaseManagementEditor
@@ -133,16 +134,18 @@ public class CaseManagementContainmentAcceptorControlImpl
                                                  child);
     }
 
-    Command<AbstractCanvasHandler, CanvasViolation> getSetEdgeCommand(final Node parent,
-                                                                      final Node child,
+    Command<AbstractCanvasHandler, CanvasViolation> getSetEdgeCommand(final Node<View<?>, Edge> parent,
+                                                                      final Node<View<?>, Edge> child,
                                                                       final OptionalInt index,
-                                                                      final Optional<Node> originalParent,
-                                                                      final OptionalInt originalIndex) {
+                                                                      final Optional<Node<View<?>, Edge>> originalParent,
+                                                                      final OptionalInt originalIndex,
+                                                                      final Optional<Node<View<?>, Edge>> originalSibling) {
         return canvasCommandFactory.setChildNode(parent,
                                                  child,
                                                  index,
                                                  originalParent,
-                                                 originalIndex);
+                                                 originalIndex,
+                                                 originalSibling);
     }
 
     Command<AbstractCanvasHandler, CanvasViolation> getDeleteEdgeCommand(final Node parent,
@@ -195,6 +198,7 @@ public class CaseManagementContainmentAcceptorControlImpl
             return false;
         }
 
+        @SuppressWarnings("unchecked")
         protected Command<AbstractCanvasHandler, CanvasViolation> makeAddMutationCommand(final WiresShape shape,
                                                                                          final WiresContainer container,
                                                                                          final OptionalInt index,
@@ -204,15 +208,21 @@ public class CaseManagementContainmentAcceptorControlImpl
                                                    container);
             final Node child = WiresUtils.getNode(getCanvasHandler(),
                                                   shape);
-            final Optional<Node> originalParent = originalContainer.flatMap((c) -> Optional.ofNullable(WiresUtils.getNode(getCanvasHandler(),
-                                                                                                                          c)));
+            final Optional<Node<View<?>, Edge>> originalParent = originalContainer.flatMap((c) -> Optional.ofNullable(WiresUtils.getNode(getCanvasHandler(),
+                                                                                                                                         c)));
+            final Optional<Node<View<?>, Edge>> originalSibling = Optional.ofNullable(
+                    index.getAsInt() > 0 ?
+                            WiresUtils.getNode(getCanvasHandler(),
+                                               container.getChildShapes().get(index.getAsInt() - 1))
+                            : null);
 
             // Set relationship.
             return getSetEdgeCommand(parent,
                                      child,
                                      index,
                                      originalParent,
-                                     originalIndex);
+                                     originalIndex,
+                                     originalSibling);
         }
     }
 }

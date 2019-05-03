@@ -100,7 +100,8 @@ public class CaseManagementCanvasCommandFactoryTest {
                                                                                   child,
                                                                                   OptionalInt.of(0),
                                                                                   Optional.empty(),
-                                                                                  OptionalInt.empty());
+                                                                                  OptionalInt.empty(),
+                                                                                  Optional.empty());
         assertNotNull(command);
         assertTrue(command instanceof CaseManagementSetChildCommand);
     }
