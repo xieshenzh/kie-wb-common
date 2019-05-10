@@ -15,8 +15,12 @@
  */
 package org.kie.workbench.common.stunner.cm.util;
 
+import java.util.Collections;
+
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.kie.workbench.common.stunner.cm.definition.CaseManagementDiagram;
+import org.kie.workbench.common.stunner.core.graph.Edge;
 import org.kie.workbench.common.stunner.core.graph.Graph;
 import org.kie.workbench.common.stunner.core.graph.Node;
 import org.kie.workbench.common.stunner.core.graph.content.definition.Definition;
@@ -24,12 +28,23 @@ import org.kie.workbench.common.stunner.core.graph.content.definition.Definition
 import org.kie.workbench.common.stunner.core.graph.impl.GraphImpl;
 import org.kie.workbench.common.stunner.core.graph.impl.NodeImpl;
 import org.kie.workbench.common.stunner.core.graph.store.GraphNodeStoreImpl;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+@RunWith(MockitoJUnitRunner.class)
 public class CaseManagementUtilsTest {
+
+    @Mock
+    private Node parent;
+
+    @Mock
+    private Node child;
 
     @Test
     public void checkGetFirstDiagramNodeWithEmptyGraph() {
@@ -56,5 +71,14 @@ public class CaseManagementUtilsTest {
                      fNode.getUUID());
         assertEquals(content,
                      fNode.getContent().getDefinition());
+    }
+
+    @Test
+    public void testGetCanvasChildIndex() throws Exception {
+        final Edge edge = mock(Edge.class);
+        when(edge.getTargetNode()).thenReturn(child);
+        when(parent.getOutEdges()).thenReturn(Collections.singletonList(edge));
+
+        assertEquals(0, CaseManagementUtils.getCanvasChildIndex(parent, child));
     }
 }

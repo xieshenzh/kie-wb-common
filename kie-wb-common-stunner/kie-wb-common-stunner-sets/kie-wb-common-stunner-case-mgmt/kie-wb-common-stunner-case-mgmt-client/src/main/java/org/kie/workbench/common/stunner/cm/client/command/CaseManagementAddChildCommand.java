@@ -25,8 +25,8 @@ import org.kie.workbench.common.stunner.core.graph.Node;
 import org.kie.workbench.common.stunner.core.graph.command.GraphCommandExecutionContext;
 import org.kie.workbench.common.stunner.core.rule.RuleViolation;
 
-import static org.kie.workbench.common.stunner.cm.client.command.util.CaseManagementCommandUtil.getCanvasNewChildIndex;
-import static org.kie.workbench.common.stunner.cm.client.command.util.CaseManagementCommandUtil.getGraphNewChildIndex;
+import static org.kie.workbench.common.stunner.cm.util.CaseManagementUtils.getCanvasNewChildIndex;
+import static org.kie.workbench.common.stunner.cm.util.CaseManagementUtils.getGraphNewChildIndex;
 
 public class CaseManagementAddChildCommand extends org.kie.workbench.common.stunner.core.client.canvas.command.AddChildNodeCommand {
 

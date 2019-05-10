@@ -18,10 +18,13 @@ package org.kie.workbench.common.stunner.cm.backend;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import javax.enterprise.context.Dependent;
@@ -32,11 +35,13 @@ import org.kie.workbench.common.stunner.bpmn.backend.converters.TypedFactoryMana
 import org.kie.workbench.common.stunner.bpmn.backend.converters.tostunner.DefinitionResolver;
 import org.kie.workbench.common.stunner.bpmn.backend.workitem.service.WorkItemDefinitionBackendService;
 import org.kie.workbench.common.stunner.bpmn.definition.SequenceFlow;
+import org.kie.workbench.common.stunner.bpmn.definition.StartNoneEvent;
 import org.kie.workbench.common.stunner.cm.CaseManagementDefinitionSet;
 import org.kie.workbench.common.stunner.cm.backend.converters.tostunner.CaseManagementConverterFactory;
 import org.kie.workbench.common.stunner.cm.definition.AdHocSubprocess;
 import org.kie.workbench.common.stunner.cm.definition.CaseManagementDiagram;
 import org.kie.workbench.common.stunner.cm.qualifiers.CaseManagementEditor;
+import org.kie.workbench.common.stunner.cm.util.CaseManagementUtils;
 import org.kie.workbench.common.stunner.core.api.DefinitionManager;
 import org.kie.workbench.common.stunner.core.api.FactoryManager;
 import org.kie.workbench.common.stunner.core.backend.service.XMLEncoderDiagramMetadataMarshaller;
@@ -56,6 +61,10 @@ import org.kie.workbench.common.stunner.core.graph.content.view.ViewConnector;
 import org.kie.workbench.common.stunner.core.graph.impl.EdgeImpl;
 import org.kie.workbench.common.stunner.core.rule.RuleManager;
 import org.kie.workbench.common.stunner.core.util.UUID;
+
+import static java.util.function.Function.identity;
+import static org.kie.workbench.common.stunner.cm.util.CaseManagementUtils.childPredicate;
+import static org.kie.workbench.common.stunner.cm.util.CaseManagementUtils.sequencePredicate;
 
 @Dependent
 @CaseManagementEditor
@@ -88,7 +97,7 @@ public class CaseManagementDirectDiagramMarshaller extends BaseDirectDiagramMars
     @Override
     @SuppressWarnings("unchecked")
     public String marshall(Diagram<Graph, Metadata> diagram) throws IOException {
-        preMarshallProcess(diagram);
+//        preMarshallProcess(diagram);
 
         return super.marshall(diagram);
     }
@@ -240,34 +249,42 @@ public class CaseManagementDirectDiagramMarshaller extends BaseDirectDiagramMars
                 .filter(node -> CaseManagementDiagram.class.isInstance(node.getContent().getDefinition()))
                 .findAny().ifPresent(root -> {
 
-            // remove sequence flow between stages
-            deleteChildEdge(root);
+            // sort the stages
+            Map<Node<View<?>, Edge>, Edge> childNodes = root.getOutEdges().stream()
+                    .filter(childPredicate()).collect(Collectors.toMap(e -> (Node<View<?>, Edge>) e.getTargetNode(), identity()));
 
-//            // remove start event and end event
-//            if (!root.getOutEdges().isEmpty()) {
-//                final Node<View<?>, Edge> startNode = root.getOutEdges().get(0).getTargetNode();
-//                if (StartNoneEvent.class.isInstance(startNode.getContent().getDefinition())) {
-//                    deleteChild(root, startNode);
-//                    graph.removeNode(startNode.getUUID());
-//                }
-//            }
-//
-//            if (!root.getOutEdges().isEmpty()) {
-//                final Node<View<?>, Edge> endNode = root.getOutEdges().get(root.getOutEdges().size() - 1).getTargetNode();
-//                if (EndNoneEvent.class.isInstance(endNode.getContent().getDefinition())) {
-//                    deleteChild(root, endNode);
-//                    graph.removeNode(endNode.getUUID());
-//                }
-//            }
+            Node<View<?>, Edge> startNode = root.getOutEdges().stream().map(Edge::getTargetNode)
+                    .filter(n -> ((Node<View<?>, Edge>) n).getContent().getDefinition() instanceof StartNoneEvent).findAny()
+                    .orElseGet(() -> childNodes.keySet().stream().filter(n -> n.getInEdges().size() == 1).findAny().orElse(null));
+
+            if (startNode != null) {
+                Node<View<?>, Edge> node = startNode;
+                List<Edge> childEdges = new LinkedList<>();
+
+                do {
+                    childEdges.add(0, childNodes.get(node));
+                    node = node.getOutEdges().stream().filter(sequencePredicate())
+                            .map(Edge::getTargetNode).filter(childNodes::containsKey).findAny().orElse(null);
+                } while (node != null);
+
+                childEdges.forEach(e -> root.getOutEdges().remove(e));
+                childEdges.forEach(e -> root.getOutEdges().add(0, e));
+            }
 
             // sort the child nodes in stages
-//            Stream<Node<View<?>, Edge<View, Node<View, Edge>>>> stageStream = root.getOutEdges().stream().map(Edge::getTargetNode);
-//            stageStream.filter(n -> AdHocSubprocess.class.isInstance(n.getContent().getDefinition()))
-//                    .forEach(n -> Collections.sort(n.getOutEdges(), (e1, e2) -> {
-//                        final double y1 = e1.getTargetNode().getContent().getBounds().getY();
-//                        final double y2 = e2.getTargetNode().getContent().getBounds().getY();
-//                        return Double.compare(y1, y2);
-//                    }));
+            Stream<Node<View<?>, Edge>> stageStream = root.getOutEdges().stream().filter(childPredicate()).map(Edge::getTargetNode);
+            stageStream.filter(CaseManagementUtils::isStageNode)
+                    .forEach(n -> {
+                        List<Edge> edges = n.getOutEdges().stream().filter(childPredicate()).collect(Collectors.toList());
+                        Collections.sort(edges, (e1, e2) -> {
+                            final double y1 = ((Node<View, Edge>) e1.getTargetNode()).getContent().getBounds().getY();
+                            final double y2 = ((Node<View, Edge>) e2.getTargetNode()).getContent().getBounds().getY();
+                            return Double.compare(y2, y1);
+                        });
+
+                        edges.forEach(e -> n.getOutEdges().remove(e));
+                        edges.forEach(e -> n.getOutEdges().add(0, e));
+                    });
         });
     }
 

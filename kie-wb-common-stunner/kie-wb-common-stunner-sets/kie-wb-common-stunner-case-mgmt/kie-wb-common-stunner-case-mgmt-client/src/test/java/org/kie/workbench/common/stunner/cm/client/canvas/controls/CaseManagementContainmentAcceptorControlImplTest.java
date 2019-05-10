@@ -182,18 +182,18 @@ public class CaseManagementContainmentAcceptorControlImplTest {
 
         control.getSetEdgeCommand(parent,
                                   child,
-                                  OptionalInt.empty(),
                                   Optional.empty(),
                                   OptionalInt.empty(),
-                                  Optional.empty());
+                                  Optional.empty(),
+                                  OptionalInt.empty());
 
         verify(canvasCommandFactory,
                times(1)).setChildNode(eq(parent),
                                       eq(child),
-                                      eq(OptionalInt.empty()),
                                       eq(Optional.empty()),
                                       eq(OptionalInt.empty()),
-                                      eq(Optional.empty()));
+                                      eq(Optional.empty()),
+                                      eq(OptionalInt.empty()));
     }
 
     @Test
@@ -262,10 +262,10 @@ public class CaseManagementContainmentAcceptorControlImplTest {
         verify(canvasCommandFactory,
                times(1)).setChildNode(any(Node.class),
                                       any(Node.class),
+                                      eq(Optional.empty()),
                                       eq(OptionalInt.of(0)),
                                       eq(Optional.empty()),
-                                      eq(OptionalInt.empty()),
-                                      eq(Optional.empty()));
+                                      eq(OptionalInt.empty()));
     }
 
     private ILayoutHandler getILayoutHandler(final WiresContainer parentShape,

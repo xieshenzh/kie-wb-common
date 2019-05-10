@@ -43,14 +43,22 @@ import org.kie.workbench.common.stunner.core.graph.command.DirectGraphCommandExe
 import org.kie.workbench.common.stunner.core.graph.command.GraphCommandExecutionContext;
 import org.kie.workbench.common.stunner.core.graph.command.GraphCommandManager;
 import org.kie.workbench.common.stunner.core.graph.command.impl.GraphCommandFactory;
+import org.kie.workbench.common.stunner.core.graph.content.Bounds;
 import org.kie.workbench.common.stunner.core.graph.content.definition.Definition;
 import org.kie.workbench.common.stunner.core.graph.content.definition.DefinitionSet;
-import org.kie.workbench.common.stunner.core.graph.content.view.Point2D;
-import org.kie.workbench.common.stunner.core.graph.content.view.Point2DConnection;
+import org.kie.workbench.common.stunner.core.graph.content.view.MagnetConnection;
 import org.kie.workbench.common.stunner.core.graph.content.view.View;
 import org.kie.workbench.common.stunner.core.graph.processing.index.GraphIndexBuilder;
 import org.kie.workbench.common.stunner.core.rule.RuleManager;
 import org.kie.workbench.common.stunner.core.util.UUID;
+
+import static org.kie.workbench.common.stunner.cm.util.CaseManagementUtils.EVENT_HEIGHT;
+import static org.kie.workbench.common.stunner.cm.util.CaseManagementUtils.EVENT_WIDTH;
+import static org.kie.workbench.common.stunner.cm.util.CaseManagementUtils.GAP;
+import static org.kie.workbench.common.stunner.cm.util.CaseManagementUtils.ORIGIN_X;
+import static org.kie.workbench.common.stunner.cm.util.CaseManagementUtils.ORIGIN_Y;
+import static org.kie.workbench.common.stunner.cm.util.CaseManagementUtils.STAGE_HEIGHT;
+import static org.kie.workbench.common.stunner.cm.util.CaseManagementUtils.STAGE_WIDTH;
 
 /**
  * The custom factory for Case Management graphs.
@@ -141,14 +149,20 @@ public class CaseManagementGraphFactoryImpl extends AbstractGraphFactory impleme
         final Node<Definition<CaseManagementDiagram>, Edge> diagramNode =
                 (Node<Definition<CaseManagementDiagram>, Edge>) factoryManager.newElement(UUID.uuid(), diagramType);
 
-        final Node<View<AdHocSubprocess>, Edge> startEventNode =
-                (Node<View<AdHocSubprocess>, Edge>) factoryManager.newElement(UUID.uuid(), StartNoneEvent.class);
+        final Node<View<StartNoneEvent>, Edge> startEventNode =
+                (Node<View<StartNoneEvent>, Edge>) factoryManager.newElement(UUID.uuid(), StartNoneEvent.class);
+        startEventNode.getContent().setBounds(
+                Bounds.create(ORIGIN_X, ORIGIN_Y, ORIGIN_X + EVENT_WIDTH, ORIGIN_Y + EVENT_HEIGHT));
 
         final Node<View<AdHocSubprocess>, Edge> stageNode =
                 (Node<View<AdHocSubprocess>, Edge>) factoryManager.newElement(UUID.uuid(), AdHocSubprocess.class);
+        stageNode.getContent().setBounds(
+                Bounds.create(ORIGIN_X + EVENT_WIDTH + GAP, ORIGIN_Y, ORIGIN_X + EVENT_WIDTH + STAGE_WIDTH + GAP, ORIGIN_Y + STAGE_HEIGHT));
 
-        final Node<View<AdHocSubprocess>, Edge> endEventNode =
-                (Node<View<AdHocSubprocess>, Edge>) factoryManager.newElement(UUID.uuid(), EndNoneEvent.class);
+        final Node<View<EndNoneEvent>, Edge> endEventNode =
+                (Node<View<EndNoneEvent>, Edge>) factoryManager.newElement(UUID.uuid(), EndNoneEvent.class);
+        endEventNode.getContent().setBounds(
+                Bounds.create(ORIGIN_X + EVENT_WIDTH + STAGE_WIDTH + GAP * 2, ORIGIN_Y, ORIGIN_X + EVENT_WIDTH * 2 + STAGE_WIDTH + GAP * 2, ORIGIN_Y + EVENT_HEIGHT));
 
         final Edge<View<SequenceFlow>, Node> startEventEdge =
                 (Edge<View<SequenceFlow>, Node>) factoryManager.newElement(UUID.uuid(), SequenceFlow.class);
@@ -160,10 +174,14 @@ public class CaseManagementGraphFactoryImpl extends AbstractGraphFactory impleme
         commands.add(graphCommandFactory.addChildNode(diagramNode, startEventNode));
         commands.add(graphCommandFactory.addChildNode(diagramNode, stageNode));
         commands.add(graphCommandFactory.addChildNode(diagramNode, endEventNode));
-        commands.add(graphCommandFactory.setSourceNode(startEventNode, startEventEdge, Point2DConnection.at(Point2D.create(475d, 475d))));
-        commands.add(graphCommandFactory.setTargetNode(stageNode, startEventEdge, Point2DConnection.at(Point2D.create(475d, 475d))));
-        commands.add(graphCommandFactory.setSourceNode(stageNode, endEventEdge, Point2DConnection.at(Point2D.create(475d, 475d))));
-        commands.add(graphCommandFactory.setTargetNode(endEventNode, endEventEdge, Point2DConnection.at(Point2D.create(475d, 475d))));
+        commands.add(graphCommandFactory.setSourceNode(startEventNode, startEventEdge,
+                                                       new MagnetConnection.Builder().atX(475d).atY(475d).auto(true).build()));
+        commands.add(graphCommandFactory.setTargetNode(stageNode, startEventEdge,
+                                                       new MagnetConnection.Builder().atX(475d).atY(475d).auto(true).build()));
+        commands.add(graphCommandFactory.setSourceNode(stageNode, endEventEdge,
+                                                       new MagnetConnection.Builder().atX(475d).atY(475d).auto(true).build()));
+        commands.add(graphCommandFactory.setTargetNode(endEventNode, endEventEdge,
+                                                       new MagnetConnection.Builder().atX(475d).atY(475d).auto(true).build()));
 
         return commands;
     }

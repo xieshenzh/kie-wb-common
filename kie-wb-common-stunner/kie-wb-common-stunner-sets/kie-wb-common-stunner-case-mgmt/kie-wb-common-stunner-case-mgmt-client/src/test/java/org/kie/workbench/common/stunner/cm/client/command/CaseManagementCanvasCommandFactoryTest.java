@@ -98,10 +98,10 @@ public class CaseManagementCanvasCommandFactoryTest {
         //Checks the command is a specific sub-class for Case Management
         final CanvasCommand<AbstractCanvasHandler> command = factory.setChildNode(parent,
                                                                                   child,
+                                                                                  Optional.empty(),
                                                                                   OptionalInt.of(0),
                                                                                   Optional.empty(),
-                                                                                  OptionalInt.empty(),
-                                                                                  Optional.empty());
+                                                                                  OptionalInt.empty());
         assertNotNull(command);
         assertTrue(command instanceof CaseManagementSetChildCommand);
     }

@@ -136,16 +136,16 @@ public class CaseManagementContainmentAcceptorControlImpl
 
     Command<AbstractCanvasHandler, CanvasViolation> getSetEdgeCommand(final Node<View<?>, Edge> parent,
                                                                       final Node<View<?>, Edge> child,
+                                                                      final Optional<Node<View<?>, Edge>> sibling,
                                                                       final OptionalInt index,
                                                                       final Optional<Node<View<?>, Edge>> originalParent,
-                                                                      final OptionalInt originalIndex,
-                                                                      final Optional<Node<View<?>, Edge>> originalSibling) {
+                                                                      final OptionalInt originalIndex) {
         return canvasCommandFactory.setChildNode(parent,
                                                  child,
+                                                 sibling,
                                                  index,
                                                  originalParent,
-                                                 originalIndex,
-                                                 originalSibling);
+                                                 originalIndex);
     }
 
     Command<AbstractCanvasHandler, CanvasViolation> getDeleteEdgeCommand(final Node parent,
@@ -204,25 +204,20 @@ public class CaseManagementContainmentAcceptorControlImpl
                                                                                          final OptionalInt index,
                                                                                          final Optional<WiresContainer> originalContainer,
                                                                                          final OptionalInt originalIndex) {
-            final Node parent = WiresUtils.getNode(getCanvasHandler(),
-                                                   container);
-            final Node child = WiresUtils.getNode(getCanvasHandler(),
-                                                  shape);
-            final Optional<Node<View<?>, Edge>> originalParent = originalContainer.flatMap((c) -> Optional.ofNullable(WiresUtils.getNode(getCanvasHandler(),
-                                                                                                                                         c)));
-            final Optional<Node<View<?>, Edge>> originalSibling = Optional.ofNullable(
-                    index.getAsInt() > 0 ?
-                            WiresUtils.getNode(getCanvasHandler(),
-                                               container.getChildShapes().get(index.getAsInt() - 1))
-                            : null);
+            final Node parent = WiresUtils.getNode(getCanvasHandler(), container);
+            final Node child = WiresUtils.getNode(getCanvasHandler(), shape);
+            final int i = index.orElse(0);
+            final Optional<Node<View<?>, Edge>> sibling = i > 0 ? Optional.of(WiresUtils.getNode(getCanvasHandler(), container.getChildShapes().get(i - 1))) : Optional.empty();
+
+            final Optional<Node<View<?>, Edge>> originalParent = originalContainer.flatMap((c) -> Optional.ofNullable(WiresUtils.getNode(getCanvasHandler(), c)));
 
             // Set relationship.
             return getSetEdgeCommand(parent,
                                      child,
+                                     sibling,
                                      index,
                                      originalParent,
-                                     originalIndex,
-                                     originalSibling);
+                                     originalIndex);
         }
     }
 }

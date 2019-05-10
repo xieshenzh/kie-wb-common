@@ -33,16 +33,24 @@ import org.kie.workbench.common.stunner.core.graph.Node;
 import org.kie.workbench.common.stunner.core.graph.command.GraphCommandExecutionContext;
 import org.kie.workbench.common.stunner.core.graph.command.GraphCommandResultBuilder;
 import org.kie.workbench.common.stunner.core.graph.command.impl.AbstractGraphCommand;
+import org.kie.workbench.common.stunner.core.graph.content.Bounds;
 import org.kie.workbench.common.stunner.core.graph.content.relationship.Child;
+import org.kie.workbench.common.stunner.core.graph.content.view.MagnetConnection;
 import org.kie.workbench.common.stunner.core.graph.content.view.View;
+import org.kie.workbench.common.stunner.core.graph.content.view.ViewConnector;
+import org.kie.workbench.common.stunner.core.graph.content.view.ViewConnectorImpl;
 import org.kie.workbench.common.stunner.core.graph.impl.EdgeImpl;
 import org.kie.workbench.common.stunner.core.rule.RuleViolation;
 import org.kie.workbench.common.stunner.core.util.UUID;
 
-import static org.kie.workbench.common.stunner.cm.client.command.util.CaseManagementCommandUtil.childPredicate;
-import static org.kie.workbench.common.stunner.cm.client.command.util.CaseManagementCommandUtil.isStage;
-import static org.kie.workbench.common.stunner.cm.client.command.util.CaseManagementCommandUtil.isStageNode;
-import static org.kie.workbench.common.stunner.cm.client.command.util.CaseManagementCommandUtil.sequencePredicate;
+import static org.kie.workbench.common.stunner.cm.util.CaseManagementUtils.CHILD_HEIGHT;
+import static org.kie.workbench.common.stunner.cm.util.CaseManagementUtils.CHILD_WIDTH;
+import static org.kie.workbench.common.stunner.cm.util.CaseManagementUtils.STAGE_GAP;
+import static org.kie.workbench.common.stunner.cm.util.CaseManagementUtils.childPredicate;
+import static org.kie.workbench.common.stunner.cm.util.CaseManagementUtils.isStage;
+import static org.kie.workbench.common.stunner.cm.util.CaseManagementUtils.isStageNode;
+import static org.kie.workbench.common.stunner.cm.util.CaseManagementUtils.isSubStageNode;
+import static org.kie.workbench.common.stunner.cm.util.CaseManagementUtils.sequencePredicate;
 
 public class CaseManagementSetChildNodeGraphCommand extends AbstractGraphCommand {
 
@@ -57,6 +65,7 @@ public class CaseManagementSetChildNodeGraphCommand extends AbstractGraphCommand
     private Optional<Edge> edge;
     private Optional<Node<View<?>, Edge>> originalIn;
     private Optional<Node<View<?>, Edge>> originalOut;
+    private Optional<Bounds> originalBounds;
 
     public CaseManagementSetChildNodeGraphCommand(final Node<View<?>, Edge> parent,
                                                   final Node<View<?>, Edge> child,
@@ -74,6 +83,7 @@ public class CaseManagementSetChildNodeGraphCommand extends AbstractGraphCommand
         this.edge = Optional.empty();
         this.originalIn = Optional.empty();
         this.originalOut = Optional.empty();
+        this.originalBounds = Optional.empty();
     }
 
     @Override
@@ -86,6 +96,7 @@ public class CaseManagementSetChildNodeGraphCommand extends AbstractGraphCommand
 
         removeExistingRelationship(context);
         addNewRelationship(context);
+        resizeNodes();
 
         return results;
     }
@@ -123,7 +134,7 @@ public class CaseManagementSetChildNodeGraphCommand extends AbstractGraphCommand
                             originalOut.get(),
                             OptionalInt.empty(),
                             context,
-                            SequenceFlow::new);
+                            sequenceFlowSupplier());
         }
     }
 
@@ -196,12 +207,21 @@ public class CaseManagementSetChildNodeGraphCommand extends AbstractGraphCommand
                                           child,
                                           OptionalInt.empty(),
                                           context,
-                                          SequenceFlow::new));
+                                          sequenceFlowSupplier()));
         out.ifPresent(n -> addRelationship(child,
                                            n,
                                            OptionalInt.empty(),
                                            context,
-                                           SequenceFlow::new));
+                                           sequenceFlowSupplier()));
+    }
+
+    private Supplier<ViewConnector<SequenceFlow>> sequenceFlowSupplier() {
+        ViewConnector<SequenceFlow> viewConnector = new ViewConnectorImpl<>(new SequenceFlow(), Bounds.create(0d, 0d, 30d, 30d));
+
+        viewConnector.setSourceConnection(new MagnetConnection.Builder().atX(475d).atY(475d).auto(true).build());
+        viewConnector.setTargetConnection(new MagnetConnection.Builder().atX(475d).atY(475d).auto(true).build());
+
+        return () -> viewConnector;
     }
 
     @SuppressWarnings("unchecked")
@@ -221,15 +241,15 @@ public class CaseManagementSetChildNodeGraphCommand extends AbstractGraphCommand
     }
 
     @SuppressWarnings("unchecked")
-    private void removeRelationship(final Edge e,
-                                    final Node parent,
-                                    final Node child,
+    private void removeRelationship(final Edge edge,
+                                    final Node sourceNode,
+                                    final Node targetNode,
                                     final GraphCommandExecutionContext context) {
-        e.setSourceNode(null);
-        e.setTargetNode(null);
-        parent.getOutEdges().remove(e);
-        child.getInEdges().remove(e);
-        getMutableIndex(context).removeEdge(e);
+        edge.setSourceNode(null);
+        edge.setTargetNode(null);
+        sourceNode.getOutEdges().remove(edge);
+        targetNode.getInEdges().remove(edge);
+        getMutableIndex(context).removeEdge(edge);
     }
 
     @SuppressWarnings("unchecked")
@@ -280,7 +300,7 @@ public class CaseManagementSetChildNodeGraphCommand extends AbstractGraphCommand
                                             out.get(),
                                             OptionalInt.empty(),
                                             context,
-                                            SequenceFlow::new));
+                                            sequenceFlowSupplier()));
 
         //Add new relationship
         if (originalIn.isPresent() && originalOut.isPresent()) {
@@ -295,13 +315,13 @@ public class CaseManagementSetChildNodeGraphCommand extends AbstractGraphCommand
                                                      originalOut.get(),
                                                      OptionalInt.empty(),
                                                      context,
-                                                     SequenceFlow::new));
+                                                     sequenceFlowSupplier()));
 
         originalIn.ifPresent((p) -> addRelationship(originalIn.get(),
                                                     child,
                                                     OptionalInt.empty(),
                                                     context,
-                                                    SequenceFlow::new));
+                                                    sequenceFlowSupplier()));
 
         originalParent.ifPresent((p) -> addRelationship(originalParent.get(),
                                                         child,
@@ -309,6 +329,29 @@ public class CaseManagementSetChildNodeGraphCommand extends AbstractGraphCommand
                                                         context,
                                                         Child::new));
 
+        undoResizeNodes();
+
         return GraphCommandResultBuilder.SUCCESS;
+    }
+
+    private void resizeNodes() {
+        if (isSubStageNode(child)) {
+            Bounds bounds = parent.getContent().getBounds();
+            originalBounds = Optional.of(Bounds.create(bounds.getUpperLeft().getX(), bounds.getUpperLeft().getY(),
+                                                       bounds.getLowerRight().getX(), bounds.getLowerRight().getY()));
+
+            double parentHeight = bounds.getLowerRight().getY() - bounds.getUpperLeft().getY();
+
+            Bounds childBounds = Bounds.create(STAGE_GAP, parentHeight, STAGE_GAP + CHILD_WIDTH, parentHeight + CHILD_HEIGHT);
+            child.getContent().setBounds(childBounds);
+
+            Bounds parentBounds = Bounds.create(bounds.getUpperLeft().getX(), bounds.getUpperLeft().getY(),
+                                                bounds.getLowerRight().getX(), bounds.getLowerRight().getY() + STAGE_GAP + CHILD_HEIGHT);
+            parent.getContent().setBounds(parentBounds);
+        }
+    }
+
+    private void undoResizeNodes() {
+        originalBounds.ifPresent(b -> parent.getContent().setBounds(b));
     }
 }

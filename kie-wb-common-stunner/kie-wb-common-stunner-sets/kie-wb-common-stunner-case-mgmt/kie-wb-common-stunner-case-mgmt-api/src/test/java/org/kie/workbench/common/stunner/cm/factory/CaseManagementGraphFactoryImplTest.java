@@ -34,6 +34,7 @@ import org.kie.workbench.common.stunner.core.graph.command.GraphCommandExecution
 import org.kie.workbench.common.stunner.core.graph.command.GraphCommandManager;
 import org.kie.workbench.common.stunner.core.graph.command.impl.GraphCommandFactory;
 import org.kie.workbench.common.stunner.core.graph.content.definition.DefinitionSet;
+import org.kie.workbench.common.stunner.core.graph.content.view.View;
 import org.kie.workbench.common.stunner.core.graph.processing.index.GraphIndexBuilder;
 import org.kie.workbench.common.stunner.core.graph.processing.index.Index;
 import org.kie.workbench.common.stunner.core.rule.RuleManager;
@@ -104,14 +105,17 @@ public class CaseManagementGraphFactoryImplTest {
         final Node stageNode = mock(Node.class);
         when(factoryManager.newElement(anyString(),
                                        eq(AdHocSubprocess.class))).thenReturn(stageNode);
+        when(stageNode.getContent()).thenReturn(mock(View.class));
 
         final Node startEventNode = mock(Node.class);
         when(factoryManager.newElement(anyString(),
                                        eq(StartNoneEvent.class))).thenReturn(startEventNode);
+        when(startEventNode.getContent()).thenReturn(mock(View.class));
 
         final Node endEventNode = mock(Node.class);
         when(factoryManager.newElement(anyString(),
                                        eq(EndNoneEvent.class))).thenReturn(endEventNode);
+        when(endEventNode.getContent()).thenReturn(mock(View.class));
 
         final Graph<DefinitionSet, Node> graph = factory.build("uuid1", "defSetId");
 
