@@ -15,18 +15,6 @@
  */
 package org.kie.workbench.common.stunner.cm.backend;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
@@ -34,48 +22,20 @@ import org.kie.workbench.common.stunner.bpmn.backend.BaseDirectDiagramMarshaller
 import org.kie.workbench.common.stunner.bpmn.backend.converters.TypedFactoryManager;
 import org.kie.workbench.common.stunner.bpmn.backend.converters.tostunner.DefinitionResolver;
 import org.kie.workbench.common.stunner.bpmn.backend.workitem.service.WorkItemDefinitionBackendService;
-import org.kie.workbench.common.stunner.bpmn.definition.SequenceFlow;
-import org.kie.workbench.common.stunner.bpmn.definition.StartNoneEvent;
 import org.kie.workbench.common.stunner.cm.CaseManagementDefinitionSet;
 import org.kie.workbench.common.stunner.cm.backend.converters.tostunner.CaseManagementConverterFactory;
-import org.kie.workbench.common.stunner.cm.definition.AdHocSubprocess;
 import org.kie.workbench.common.stunner.cm.definition.CaseManagementDiagram;
 import org.kie.workbench.common.stunner.cm.qualifiers.CaseManagementEditor;
-import org.kie.workbench.common.stunner.cm.util.CaseManagementUtils;
 import org.kie.workbench.common.stunner.core.api.DefinitionManager;
 import org.kie.workbench.common.stunner.core.api.FactoryManager;
 import org.kie.workbench.common.stunner.core.backend.service.XMLEncoderDiagramMetadataMarshaller;
-import org.kie.workbench.common.stunner.core.diagram.Diagram;
-import org.kie.workbench.common.stunner.core.diagram.Metadata;
-import org.kie.workbench.common.stunner.core.graph.Edge;
-import org.kie.workbench.common.stunner.core.graph.Graph;
-import org.kie.workbench.common.stunner.core.graph.Node;
 import org.kie.workbench.common.stunner.core.graph.command.GraphCommandManager;
 import org.kie.workbench.common.stunner.core.graph.command.impl.GraphCommandFactory;
-import org.kie.workbench.common.stunner.core.graph.content.Bounds;
-import org.kie.workbench.common.stunner.core.graph.content.definition.DefinitionSet;
-import org.kie.workbench.common.stunner.core.graph.content.relationship.Child;
-import org.kie.workbench.common.stunner.core.graph.content.view.MagnetConnection;
-import org.kie.workbench.common.stunner.core.graph.content.view.View;
-import org.kie.workbench.common.stunner.core.graph.content.view.ViewConnector;
-import org.kie.workbench.common.stunner.core.graph.impl.EdgeImpl;
 import org.kie.workbench.common.stunner.core.rule.RuleManager;
-import org.kie.workbench.common.stunner.core.util.UUID;
-
-import static java.util.function.Function.identity;
-import static org.kie.workbench.common.stunner.cm.util.CaseManagementUtils.childPredicate;
-import static org.kie.workbench.common.stunner.cm.util.CaseManagementUtils.sequencePredicate;
 
 @Dependent
 @CaseManagementEditor
 public class CaseManagementDirectDiagramMarshaller extends BaseDirectDiagramMarshaller {
-
-    private static final double GAP = 50.0;
-    private static final double STAGE_GAP = 25.0;
-    private static final double ORIGIN_X = 50.0;
-    private static final double ORIGIN_Y = 50.0;
-    private static final double EVENT_WIDTH = 55.0;
-    private static final double EVENT_HEIGHT = 55.0;
 
     @Inject
     public CaseManagementDirectDiagramMarshaller(final XMLEncoderDiagramMetadataMarshaller diagramMetadataMarshaller,
@@ -92,249 +52,6 @@ public class CaseManagementDirectDiagramMarshaller extends BaseDirectDiagramMars
               factoryManager,
               commandFactory,
               commandManager);
-    }
-
-    @Override
-    @SuppressWarnings("unchecked")
-    public String marshall(Diagram<Graph, Metadata> diagram) throws IOException {
-//        preMarshallProcess(diagram);
-
-        return super.marshall(diagram);
-    }
-
-    @SuppressWarnings("unchecked")
-    private void preMarshallProcess(final Diagram<Graph, Metadata> diagram) {
-        Iterable<Node<View<?>, Edge>> nodes = diagram.getGraph().nodes();
-
-        StreamSupport.stream(nodes.spliterator(), false)
-                .filter(node -> CaseManagementDiagram.class.isInstance(node.getContent().getDefinition()))
-                .findAny().ifPresent(root -> {
-            final Node<View, Edge<View, Node<View, Edge<View, Node<View, Edge>>>>> rootNode = (Node) root;
-
-            // adjust the position of the elements
-//            final double stageWidth = adjustNodeBounds(rootNode);
-
-            // create start event and end event
-//            final Node startNoneEvent = typedFactoryManager.newNode(UUID.uuid(), StartNoneEvent.class);
-//            ((View) startNoneEvent.getContent()).setBounds(
-//                    Bounds.create(ORIGIN_X, ORIGIN_Y, ORIGIN_X + EVENT_WIDTH, ORIGIN_Y + EVENT_HEIGHT));
-//            diagram.getGraph().addNode(startNoneEvent);
-//            createChild(UUID.uuid(), rootNode, startNoneEvent, 0);
-//
-//            final Node endNoneEvent = typedFactoryManager.newNode(UUID.uuid(), EndNoneEvent.class);
-//            ((View) endNoneEvent.getContent()).setBounds(
-//                    Bounds.create(stageWidth, ORIGIN_Y, stageWidth + EVENT_WIDTH, ORIGIN_Y + EVENT_HEIGHT));
-//            diagram.getGraph().addNode(endNoneEvent);
-//            createChild(UUID.uuid(), rootNode, endNoneEvent, rootNode.getOutEdges().size());
-
-            // create sequence flow between stages
-            buildChildEdge(rootNode);
-        });
-    }
-
-    @SuppressWarnings("unchecked")
-    private void buildChildEdge(Node parentNode) {
-        final List<Node> nodes = (List<Node>) parentNode.getOutEdges().stream()
-                .map(e -> ((Edge) e).getTargetNode()).collect(Collectors.toList());
-
-        for (int i = 0, n = nodes.size() - 1; i < n; i++) {
-            createEdge(UUID.uuid(), nodes.get(i), nodes.get(i + 1));
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private void createEdge(String uuid, Node sourceNode, Node targetNode) {
-        final Edge<View<SequenceFlow>, Node> edge = typedFactoryManager.newEdge(uuid, SequenceFlow.class);
-        edge.setSourceNode(sourceNode);
-        edge.setTargetNode(targetNode);
-        sourceNode.getOutEdges().add(edge);
-        targetNode.getInEdges().add(edge);
-
-        ViewConnector<SequenceFlow> content = (ViewConnector<SequenceFlow>) edge.getContent();
-        content.setSourceConnection(MagnetConnection.Builder.atCenter(sourceNode));
-        content.setTargetConnection(MagnetConnection.Builder.atCenter(targetNode));
-    }
-
-    @SuppressWarnings("unchecked")
-    private void createChild(String uuid, Node parent, Node child, int parentIndex) {
-        final Edge<Child, Node> edge = new EdgeImpl<>(uuid);
-        edge.setContent(new Child());
-        edge.setSourceNode(parent);
-        edge.setTargetNode(child);
-
-        parent.getOutEdges().add(parentIndex, edge);
-
-        child.getInEdges().add(edge);
-    }
-
-    private double adjustNodeBounds(Node<View, Edge<View, Node<View, Edge<View, Node<View, Edge>>>>> rootNode) {
-        final List<Node<View, Edge<View, Node<View, Edge>>>> stages = rootNode.getOutEdges().stream().map(Edge::getTargetNode)
-                .filter(n -> AdHocSubprocess.class.isInstance(n.getContent().getDefinition())).collect(Collectors.toList());
-
-        if (stages.isEmpty()) {
-            return 0.0;
-        }
-
-        // calculate stage widths
-        final List<Double> stageWidths = stages.stream().map(
-                stage -> stage.getOutEdges().stream().mapToDouble(
-                        edge -> edge.getTargetNode().getContent().getBounds().getWidth() + STAGE_GAP * 2).max().orElse(STAGE_GAP * 7))
-                .collect(Collectors.toList());
-
-        // calculate stage height
-        final List<Double> stageHeights = stages.stream().map(
-                stage -> {
-                    final double cHeight = stage.getOutEdges().stream().mapToDouble(
-                            edge -> edge.getTargetNode().getContent().getBounds().getHeight() + STAGE_GAP).sum();
-                    return Double.compare(cHeight, 0.0) > 0 ? (cHeight + STAGE_GAP) : STAGE_GAP * 5;
-                }).collect(Collectors.toList());
-
-        final List<Double> stageXs = new ArrayList<>(stages.size());
-        double widthSum = ORIGIN_X + EVENT_WIDTH + GAP;
-        for (Double width : stageWidths) {
-            stageXs.add(widthSum);
-            widthSum = widthSum + width + GAP;
-        }
-
-        IntStream.range(0, stages.size()).forEach(index -> {
-            final Node<View, Edge<View, Node<View, Edge>>> node = stages.get(index);
-            final double x = stageXs.get(index);
-            final double stageWidth = stageWidths.get(index);
-            final double stageHeight = stageHeights.get(index);
-
-            // set stage bounds
-            node.getContent().setBounds(Bounds.create(x, ORIGIN_Y, x + stageWidth, ORIGIN_Y + stageHeight));
-
-            // calculate stage child y coordinates
-            final List<Double> childYs = new ArrayList<>(node.getOutEdges().size());
-            double heightSum = STAGE_GAP;
-            for (Edge<View, Node<View, Edge>> edge : node.getOutEdges()) {
-                childYs.add(heightSum);
-                heightSum = heightSum + edge.getTargetNode().getContent().getBounds().getHeight() + STAGE_GAP;
-            }
-
-            IntStream.range(0, node.getOutEdges().size()).forEach(i -> {
-                final Node<View, Edge> childNode = node.getOutEdges().get(i).getTargetNode();
-
-                final double cx = (stageWidth - childNode.getContent().getBounds().getWidth()) / 2.0;
-                final double cy = childYs.get(i);
-
-                // set stage child bounds
-                childNode.getContent().setBounds(
-                        Bounds.create(cx,
-                                      cy,
-                                      cx + childNode.getContent().getBounds().getWidth(),
-                                      cy + childNode.getContent().getBounds().getHeight()));
-            });
-        });
-
-        return widthSum;
-    }
-
-    @Override
-    public Graph<DefinitionSet, Node> unmarshall(Metadata metadata, InputStream inputStream) throws IOException {
-        Graph<DefinitionSet, Node> graph = super.unmarshall(metadata, inputStream);
-
-        postUnmarshallProcess(graph);
-
-        return graph;
-    }
-
-    @SuppressWarnings("unchecked")
-    private void postUnmarshallProcess(final Graph<DefinitionSet, Node> graph) {
-        List<Node<View<?>, Edge>> nodes = StreamSupport.stream(graph.nodes().spliterator(), false)
-                .map(n -> (Node<View<?>, Edge>) n).collect(Collectors.toList());
-
-        nodes.stream()
-                .filter(node -> CaseManagementDiagram.class.isInstance(node.getContent().getDefinition()))
-                .findAny().ifPresent(root -> {
-
-            // sort the stages
-            Map<Node<View<?>, Edge>, Edge> childNodes = root.getOutEdges().stream()
-                    .filter(childPredicate()).collect(Collectors.toMap(e -> (Node<View<?>, Edge>) e.getTargetNode(), identity()));
-
-            Node<View<?>, Edge> startNode = root.getOutEdges().stream().map(Edge::getTargetNode)
-                    .filter(n -> ((Node<View<?>, Edge>) n).getContent().getDefinition() instanceof StartNoneEvent).findAny()
-                    .orElseGet(() -> childNodes.keySet().stream().filter(n -> n.getInEdges().size() == 1).findAny().orElse(null));
-
-            if (startNode != null) {
-                Node<View<?>, Edge> node = startNode;
-                List<Edge> childEdges = new LinkedList<>();
-
-                do {
-                    childEdges.add(0, childNodes.get(node));
-                    node = node.getOutEdges().stream().filter(sequencePredicate())
-                            .map(Edge::getTargetNode).filter(childNodes::containsKey).findAny().orElse(null);
-                } while (node != null);
-
-                childEdges.forEach(e -> root.getOutEdges().remove(e));
-                childEdges.forEach(e -> root.getOutEdges().add(0, e));
-            }
-
-            // sort the child nodes in stages
-            Stream<Node<View<?>, Edge>> stageStream = root.getOutEdges().stream().filter(childPredicate()).map(Edge::getTargetNode);
-            stageStream.filter(CaseManagementUtils::isStageNode)
-                    .forEach(n -> {
-                        List<Edge> edges = n.getOutEdges().stream().filter(childPredicate()).collect(Collectors.toList());
-                        Collections.sort(edges, (e1, e2) -> {
-                            final double y1 = ((Node<View, Edge>) e1.getTargetNode()).getContent().getBounds().getY();
-                            final double y2 = ((Node<View, Edge>) e2.getTargetNode()).getContent().getBounds().getY();
-                            return Double.compare(y2, y1);
-                        });
-
-                        edges.forEach(e -> n.getOutEdges().remove(e));
-                        edges.forEach(e -> n.getOutEdges().add(0, e));
-                    });
-        });
-    }
-
-    @SuppressWarnings("unchecked")
-    private void deleteChildEdge(Node parentNode) {
-        final List<Node> childNodes = new LinkedList<>();
-
-        parentNode.getOutEdges().stream().map(e -> ((Edge) e).getTargetNode())
-                .filter(n -> ((Node) n).getInEdges().size() == 1)
-                .findAny().ifPresent(nd -> {
-            Node node = (Node) nd;
-
-            do {
-                childNodes.add(node);
-            } while ((node = deleteEdge(node)) != null);
-
-            final List<Edge> childEdges = childNodes.stream()
-                    .map(n -> (Edge) parentNode.getOutEdges().stream().filter(e -> n.equals(((Edge) e).getTargetNode())).findAny().get())
-                    .collect(Collectors.toList());
-
-            parentNode.getOutEdges().clear();
-            childEdges.forEach(e -> parentNode.getOutEdges().add(e));
-        });
-    }
-
-    @SuppressWarnings("unchecked")
-    private void deleteChild(Node parent, Node child) {
-        parent.getOutEdges().stream().filter(edge -> child.equals(((Edge) edge).getTargetNode()))
-                .findAny().ifPresent(edge -> {
-            parent.getOutEdges().remove(edge);
-            child.getInEdges().remove(edge);
-        });
-    }
-
-    @SuppressWarnings("unchecked")
-    private Node deleteEdge(Node sourceNode) {
-        final Edge targetEdge = (Edge) sourceNode.getOutEdges().stream().filter(edge -> (((Edge) edge).getContent() instanceof ViewConnector)
-                && ((ViewConnector) ((Edge) edge).getContent()).getDefinition() instanceof SequenceFlow)
-                .findAny().orElse(null);
-
-        if (targetEdge != null) {
-            final Node targetNode = targetEdge.getTargetNode();
-
-            sourceNode.getOutEdges().remove(targetEdge);
-            targetNode.getInEdges().remove(targetEdge);
-
-            return targetNode;
-        }
-
-        return null;
     }
 
     @Override
