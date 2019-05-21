@@ -29,8 +29,6 @@ import com.google.gwt.user.client.ui.IsWidget;
 import org.jboss.errai.common.client.api.Caller;
 import org.jboss.errai.common.client.api.RemoteCallback;
 import org.jboss.errai.ioc.client.api.ManagedInstance;
-import org.kie.workbench.common.stunner.bpmn.BPMNDefinitionSet;
-import org.kie.workbench.common.stunner.bpmn.client.BPMNShapeSet;
 import org.kie.workbench.common.stunner.client.widgets.presenters.session.SessionPresenter;
 import org.kie.workbench.common.stunner.client.widgets.presenters.session.impl.SessionEditorPresenter;
 import org.kie.workbench.common.stunner.client.widgets.presenters.session.impl.SessionViewerPresenter;
@@ -62,7 +60,6 @@ import org.uberfire.client.annotations.WorkbenchPartTitle;
 import org.uberfire.client.annotations.WorkbenchPartTitleDecoration;
 import org.uberfire.client.annotations.WorkbenchPartView;
 import org.uberfire.client.mvp.PlaceManager;
-import org.uberfire.client.views.pfly.multipage.PageImpl;
 import org.uberfire.client.workbench.events.ChangeTitleWidgetEvent;
 import org.uberfire.client.workbench.widgets.common.ErrorPopupPresenter;
 import org.uberfire.ext.editor.commons.client.file.popups.SavePopUpPresenter;
@@ -142,36 +139,39 @@ public class CaseManagementDiagramEditor extends AbstractProjectDiagramEditor<Ca
     public void init() {
         super.init();
 
-        this.processView.init(this);
-        this.switchedToProcess.set(false);
+        this.addTabBarWidget(
+                new SwitchViewControl("COLUMNS",
+                                      this.getTranslationService().getValue(CaseManagementProjectClientConstants.CaseManagementEditorCaseViewTooltip),
+                                      "SITEMAP",
+                                      this.getTranslationService().getValue(CaseManagementProjectClientConstants.CaseManagementEditorProcessViewTooltip)));
     }
 
     @Override
     protected void initialiseKieEditorForSession(ProjectDiagram diagram) {
         super.initialiseKieEditorForSession(diagram);
 
-        this.addPage(
-                new PageImpl(processView,
-                             this.getTranslationService().getValue(CaseManagementProjectClientConstants.CaseManagementEditorProcessViewTitle)) {
-
-                    @Override
-                    public void onFocus() {
-                        final boolean toProcess = CaseManagementDiagramEditor.this.switchedToProcess.getAndSet(true);
-                        if (!toProcess) {
-                            if (!CaseManagementDiagramEditor.this.getProcessSessionPresenter().isPresent()) {
-                                CaseManagementDiagramEditor.this.setProcessEditorSessionPresenter(
-                                        Optional.of(newProcessSessionEditorPresenter(CaseManagementDiagramEditor.this.processView)));
-                            }
-
-                            updateSessionEditorPresenter(CaseManagementDiagramEditor.this.getEditorSessionPresenter(),
-                                                         BPMNDefinitionSet.class.getName(),
-                                                         BPMNShapeSet.class.getName(),
-                                                         CaseManagementDiagramEditor.this.getProcessSessionPresenter());
-                        }
-
-                        super.onFocus();
-                    }
-                });
+//        this.addPage(
+//                new PageImpl(processView,
+//                             this.getTranslationService().getValue(CaseManagementProjectClientConstants.CaseManagementEditorProcessViewTitle)) {
+//
+//                    @Override
+//                    public void onFocus() {
+//                        final boolean toProcess = CaseManagementDiagramEditor.this.switchedToProcess.getAndSet(true);
+//                        if (!toProcess) {
+//                            if (!CaseManagementDiagramEditor.this.getProcessSessionPresenter().isPresent()) {
+//                                CaseManagementDiagramEditor.this.setProcessEditorSessionPresenter(
+//                                        Optional.of(newProcessSessionEditorPresenter(CaseManagementDiagramEditor.this.processView)));
+//                            }
+//
+//                            updateSessionEditorPresenter(CaseManagementDiagramEditor.this.getEditorSessionPresenter(),
+//                                                         BPMNDefinitionSet.class.getName(),
+//                                                         BPMNShapeSet.class.getName(),
+//                                                         CaseManagementDiagramEditor.this.getProcessSessionPresenter());
+//                        }
+//
+//                        super.onFocus();
+//                    }
+//                });
     }
 
     @Override
@@ -336,10 +336,5 @@ public class CaseManagementDiagramEditor extends AbstractProjectDiagramEditor<Ca
                 });
             }
         }).switchView(diagram, defSetId, shapeDefId);
-    }
-
-    @Override
-    protected Optional<String> getMainEditorPageTitle() {
-        return Optional.of(this.getTranslationService().getValue(CaseManagementProjectClientConstants.CaseManagementMainEditorPageTitle));
     }
 }
